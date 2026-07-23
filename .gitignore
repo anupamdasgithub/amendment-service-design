@@ -1,0 +1,58 @@
+# Build output
+target/
+build/
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# Kogito / KIE generated sources
+.kogito/
+src/main/generated/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and local runtime
+*.log
+logs/
+*.pid
+
+# Local environment overrides — never commit real credentials
+.env
+.env.*
+!.env.template
+application-local.yaml
+application-local.properties
+*.p12
+*.jks
+*.pem
+*.key
+
+# Secrets directories — ignore contents, track only templates.
+# Note: do NOT ignore the directory itself (e.g. `secrets/`), because git
+# will not descend into an excluded directory and the negations below
+# would never be evaluated.
+**/secrets/*
+!**/secrets/*.template
+!**/secrets/.gitkeep
+*secrets*.txt
+!*secrets*.txt.template
+*credentials*
+!*credentials*.template
+
+# Test output
+surefire-reports/
+failsafe-reports/
+.coverage

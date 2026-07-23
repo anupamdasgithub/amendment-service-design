@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:drools="http://www.jboss.org/drools"
+                   id="_jts_defs"
+                   targetNamespace="https://bank.com/bpmn/amendments"
+                   exporter="Manual" exporterVersion="1.0">
+
+  <bpmn2:itemDefinition id="_j_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
+  <bpmn2:itemDefinition id="_j_itemString" structureRef="String"/>
+  <bpmn2:message id="_j_msg_dispute" name="ConsentDisputed" itemRef="_j_itemString"/>
+  <bpmn2:message id="_j_msg_consent" name="ConsentResponseReceived" itemRef="_j_itemString"/>
+
+  <bpmn2:process id="amendment-joint-to-sole" name="Joint to Sole Conversion" isExecutable="true" processType="Public">
+
+    <bpmn2:property id="item" itemSubjectRef="_j_itemItem" name="item"/>
+    <bpmn2:property id="requestId" itemSubjectRef="_j_itemString" name="requestId"/>
+
+    <bpmn2:startEvent id="j_start" name="Start"><bpmn2:outgoing>jf1</bpmn2:outgoing></bpmn2:startEvent>
+
+    <bpmn2:serviceTask id="j_parties" name="Resolve parties and liabilities"
+                       implementation="##WebService" operationRef="_op_parties">
+      <bpmn2:incoming>jf1</bpmn2:incoming><bpmn2:outgoing>jf2</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+
+    <bpmn2:businessRuleTask id="j_eligibility" name="Assess conversion eligibility"
+                            implementation="http://www.jboss.org/drools/dmn">
+      <bpmn2:extensionElements>
+        <drools:metaData name="namespace"><drools:metaValue>https://bank.com/dmn/amendments</drools:metaValue></drools:metaData>
+        <drools:metaData name="model"><drools:metaValue>JointToSoleEligibility</drools:metaValue></drools:metaData>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>jf2</bpmn2:incoming><bpmn2:outgoing>jf3</bpmn2:outgoing>
+    </bpmn2:businessRuleTask>
+
+    <bpmn2:exclusiveGateway id="j_gw_elig" name="Eligibility outcome" gatewayDirection="Diverging">
+      <bpmn2:incoming>jf3</bpmn2:incoming>
+      <bpmn2:outgoing>jf_divert</bpmn2:outgoing>
+      <bpmn2:outgoing>jf_review</bpmn2:outgoing>
+      <bpmn2:outgoing>jf_consent</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+
+    <bpmn2:serviceTask id="j_divert" name="Divert to specialist journey"
+                       implementation="##WebService" operationRef="_op_divert">
+      <bpmn2:incoming>jf_divert</bpmn2:incoming><bpmn2:outgoing>jf_divert_out</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="j_end_divert" name="Diverted"><bpmn2:incoming>jf_divert_out</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:userTask id="j_review" name="Underwriting review">
+      <bpmn2:incoming>jf_review</bpmn2:incoming><bpmn2:outgoing>jf_review_out</bpmn2:outgoing>
+      <bpmn2:potentialOwner id="_j_po1">
+        <bpmn2:resourceAssignmentExpression id="_j_rae1">
+          <bpmn2:formalExpression>underwriting</bpmn2:formalExpression>
+        </bpmn2:resourceAssignmentExpression>
+      </bpmn2:potentialOwner>
+    </bpmn2:userTask>
+
+    <bpmn2:exclusiveGateway id="j_gw_consent_join" name="Proceed to consent" gatewayDirection="Converging">
+      <bpmn2:incoming>jf_consent</bpmn2:incoming>
+      <bpmn2:incoming>jf_review_out</bpmn2:incoming>
+      <bpmn2:outgoing>jf4</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+
+    <bpmn2:subProcess id="j_consent_loop" name="Collect party consent">
+      <bpmn2:incoming>jf4</bpmn2:incoming><bpmn2:outgoing>jf5</bpmn2:outgoing>
+      <bpmn2:multiInstanceLoopCharacteristics id="_j_mi" isSequential="false"/>
+
+      <bpmn2:startEvent id="j_c_start"><bpmn2:outgoing>jc1</bpmn2:outgoing></bpmn2:startEvent>
+
+      <bpmn2:serviceTask id="j_c_request" name="Request consent from party"
+                         implementation="##WebService" operationRef="_op_consent_request">
+        <bpmn2:incoming>jc1</bpmn2:incoming><bpmn2:outgoing>jc2</bpmn2:outgoing>
+      </bpmn2:serviceTask>
+
+      <bpmn2:intermediateCatchEvent id="j_c_wait" name="Await consent response">
+        <bpmn2:incoming>jc2</bpmn2:incoming><bpmn2:outgoing>jc3</bpmn2:outgoing>
+        <bpmn2:messageEventDefinition id="_j_med_c" messageRef="_j_msg_consent"/>
+        <bpmn2:boundaryEventRefs>j_c_expiry</bpmn2:boundaryEventRefs>
+      </bpmn2:intermediateCatchEvent>
+
+      <bpmn2:boundaryEvent id="j_c_expiry" name="Consent expiry" attachedToRef="j_c_wait" cancelActivity="true">
+        <bpmn2:outgoing>jc_exp</bpmn2:outgoing>
+        <bpmn2:timerEventDefinition id="_j_ted_c">
+          <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">PT336H</bpmn2:timeDuration>
+        </bpmn2:timerEventDefinition>
+      </bpmn2:boundaryEvent>
+
+      <bpmn2:serviceTask id="j_c_expire" name="Mark consent expired"
+                         implementation="##WebService" operationRef="_op_consent_expire">
+        <bpmn2:incoming>jc_exp</bpmn2:incoming><bpmn2:outgoing>jc_exp_out</bpmn2:outgoing>
+      </bpmn2:serviceTask>
+      <bpmn2:endEvent id="j_c_end_exp"><bpmn2:incoming>jc_exp_out</bpmn2:incoming></bpmn2:endEvent>
+
+      <bpmn2:endEvent id="j_c_end"><bpmn2:incoming>jc3</bpmn2:incoming></bpmn2:endEvent>
+
+      <bpmn2:sequenceFlow id="jc1" sourceRef="j_c_start" targetRef="j_c_request"/>
+      <bpmn2:sequenceFlow id="jc2" sourceRef="j_c_request" targetRef="j_c_wait"/>
+      <bpmn2:sequenceFlow id="jc3" sourceRef="j_c_wait" targetRef="j_c_end"/>
+      <bpmn2:sequenceFlow id="jc_exp" sourceRef="j_c_expiry" targetRef="j_c_expire"/>
+      <bpmn2:sequenceFlow id="jc_exp_out" sourceRef="j_c_expire" targetRef="j_c_end_exp"/>
+    </bpmn2:subProcess>
+
+    <bpmn2:exclusiveGateway id="j_gw_all_consent" name="All consents granted" gatewayDirection="Diverging">
+      <bpmn2:incoming>jf5</bpmn2:incoming>
+      <bpmn2:outgoing>jf_granted</bpmn2:outgoing>
+      <bpmn2:outgoing>jf_declined</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+
+    <bpmn2:serviceTask id="j_refuse" name="Record refusal"
+                       implementation="##WebService" operationRef="_op_fail">
+      <bpmn2:incoming>jf_declined</bpmn2:incoming><bpmn2:outgoing>jf_ref_out</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="j_end_refused" name="Refused"><bpmn2:incoming>jf_ref_out</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:userTask id="j_approve" name="Maker checker approval">
+      <bpmn2:incoming>jf_granted</bpmn2:incoming><bpmn2:outgoing>jf6</bpmn2:outgoing>
+      <bpmn2:potentialOwner id="_j_po2">
+        <bpmn2:resourceAssignmentExpression id="_j_rae2">
+          <bpmn2:formalExpression>amendments-checker</bpmn2:formalExpression>
+        </bpmn2:resourceAssignmentExpression>
+      </bpmn2:potentialOwner>
+    </bpmn2:userTask>
+
+    <bpmn2:serviceTask id="j_convert" name="Convert account in core banking"
+                       implementation="##WebService" operationRef="_op_core_convert">
+      <bpmn2:incoming>jf6</bpmn2:incoming><bpmn2:outgoing>jf7</bpmn2:outgoing>
+      <bpmn2:boundaryEventRefs>j_convert_error</bpmn2:boundaryEventRefs>
+    </bpmn2:serviceTask>
+
+    <bpmn2:boundaryEvent id="j_convert_error" name="Core failure" attachedToRef="j_convert" cancelActivity="true">
+      <bpmn2:outgoing>jf_err</bpmn2:outgoing>
+      <bpmn2:errorEventDefinition id="_j_eed" errorRef="_j_err"/>
+    </bpmn2:boundaryEvent>
+
+    <bpmn2:serviceTask id="j_compensate" name="Compensate and refer"
+                       implementation="##WebService" operationRef="_op_compensate">
+      <bpmn2:incoming>jf_err</bpmn2:incoming><bpmn2:outgoing>jf_err_out</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="j_end_failed" name="Failed"><bpmn2:incoming>jf_err_out</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:endEvent id="j_end" name="Converted"><bpmn2:incoming>jf7</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:sequenceFlow id="jf1" sourceRef="j_start" targetRef="j_parties"/>
+    <bpmn2:sequenceFlow id="jf2" sourceRef="j_parties" targetRef="j_eligibility"/>
+    <bpmn2:sequenceFlow id="jf3" sourceRef="j_eligibility" targetRef="j_gw_elig"/>
+    <bpmn2:sequenceFlow id="jf_divert" sourceRef="j_gw_elig" targetRef="j_divert">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">JtsEligibility.outcome = "DIVERTED"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="jf_review" sourceRef="j_gw_elig" targetRef="j_review">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">JtsEligibility.outcome = "REVIEW_REQUIRED"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="jf_consent" sourceRef="j_gw_elig" targetRef="j_gw_consent_join">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">JtsEligibility.outcome = "ELIGIBLE"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="jf_divert_out" sourceRef="j_divert" targetRef="j_end_divert"/>
+    <bpmn2:sequenceFlow id="jf_review_out" sourceRef="j_review" targetRef="j_gw_consent_join"/>
+    <bpmn2:sequenceFlow id="jf4" sourceRef="j_gw_consent_join" targetRef="j_consent_loop"/>
+    <bpmn2:sequenceFlow id="jf5" sourceRef="j_consent_loop" targetRef="j_gw_all_consent"/>
+    <bpmn2:sequenceFlow id="jf_granted" sourceRef="j_gw_all_consent" targetRef="j_approve">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.jointToSole.allConsentsGranted = true</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="jf_declined" sourceRef="j_gw_all_consent" targetRef="j_refuse">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.jointToSole.allConsentsGranted = false</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="jf_ref_out" sourceRef="j_refuse" targetRef="j_end_refused"/>
+    <bpmn2:sequenceFlow id="jf6" sourceRef="j_approve" targetRef="j_convert"/>
+    <bpmn2:sequenceFlow id="jf7" sourceRef="j_convert" targetRef="j_end"/>
+    <bpmn2:sequenceFlow id="jf_err" sourceRef="j_convert_error" targetRef="j_compensate"/>
+    <bpmn2:sequenceFlow id="jf_err_out" sourceRef="j_compensate" targetRef="j_end_failed"/>
+
+    <bpmn2:subProcess id="j_evsub_dispute" name="Party disputes consent" triggeredByEvent="true">
+      <bpmn2:startEvent id="j_d_start" name="Dispute raised" isInterrupting="true">
+        <bpmn2:outgoing>jd1</bpmn2:outgoing>
+        <bpmn2:messageEventDefinition id="_j_med_d" messageRef="_j_msg_dispute"/>
+      </bpmn2:startEvent>
+      <bpmn2:userTask id="j_d_task" name="Investigate consent dispute">
+        <bpmn2:incoming>jd1</bpmn2:incoming><bpmn2:outgoing>jd2</bpmn2:outgoing>
+        <bpmn2:potentialOwner id="_j_po3">
+          <bpmn2:resourceAssignmentExpression id="_j_rae3">
+            <bpmn2:formalExpression>disputes</bpmn2:formalExpression>
+          </bpmn2:resourceAssignmentExpression>
+        </bpmn2:potentialOwner>
+      </bpmn2:userTask>
+      <bpmn2:endEvent id="j_d_end" name="Conversion halted">
+        <bpmn2:incoming>jd2</bpmn2:incoming>
+        <bpmn2:terminateEventDefinition id="_j_ted_d"/>
+      </bpmn2:endEvent>
+      <bpmn2:sequenceFlow id="jd1" sourceRef="j_d_start" targetRef="j_d_task"/>
+      <bpmn2:sequenceFlow id="jd2" sourceRef="j_d_task" targetRef="j_d_end"/>
+    </bpmn2:subProcess>
+
+  </bpmn2:process>
+
+  <bpmn2:error id="_j_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
+
+  <bpmndi:BPMNDiagram id="_j_diag">
+    <bpmndi:BPMNPlane id="_j_plane" bpmnElement="amendment-joint-to-sole">
+      <bpmndi:BPMNShape id="_js_start" bpmnElement="j_start"><dc:Bounds x="60" y="140" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_parties" bpmnElement="j_parties"><dc:Bounds x="140" y="118" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_elig" bpmnElement="j_eligibility"><dc:Bounds x="300" y="118" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_gw" bpmnElement="j_gw_elig"><dc:Bounds x="460" y="138" width="40" height="40"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_loop" bpmnElement="j_consent_loop"><dc:Bounds x="540" y="80" width="280" height="160"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_approve" bpmnElement="j_approve"><dc:Bounds x="880" y="118" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_convert" bpmnElement="j_convert"><dc:Bounds x="1040" y="118" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_end" bpmnElement="j_end"><dc:Bounds x="1200" y="140" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_js_disp" bpmnElement="j_evsub_dispute"><dc:Bounds x="540" y="300" width="280" height="120"/></bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

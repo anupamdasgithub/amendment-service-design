@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="_amendment_admissibility"
+             name="AmendmentAdmissibility"
+             namespace="https://bank.com/dmn/amendments"
+             exporter="Manual"
+             exporterVersion="1.0">
+
+  <itemDefinition id="_it_AmendmentType" name="tAmendmentType" isCollection="false">
+    <typeRef>string</typeRef>
+    <typeConstraint id="_tc_type">
+      <text>"COA","CON","JOINT_TO_SOLE"</text>
+    </typeConstraint>
+  </itemDefinition>
+
+  <itemDefinition id="_it_Admissibility" name="tAdmissibility" isCollection="false">
+    <typeRef>string</typeRef>
+    <typeConstraint id="_tc_adm">
+      <text>"PERMITTED","REVIEW_REQUIRED","REFUSED"</text>
+    </typeConstraint>
+  </itemDefinition>
+
+  <itemDefinition id="_it_Outcome" name="tAdmissibilityOutcome" isCollection="false">
+    <itemComponent id="_ic_o1" name="admissibility">
+      <typeRef>tAdmissibility</typeRef>
+    </itemComponent>
+    <itemComponent id="_ic_o2" name="reasonCode">
+      <typeRef>string</typeRef>
+    </itemComponent>
+    <itemComponent id="_ic_o3" name="reasonText">
+      <typeRef>string</typeRef>
+    </itemComponent>
+  </itemDefinition>
+
+  <inputData id="_id_type" name="AmendmentType">
+    <variable id="_v_type" name="AmendmentType" typeRef="tAmendmentType"/>
+  </inputData>
+
+  <inputData id="_id_accountStatus" name="AccountStatus">
+    <variable id="_v_accountStatus" name="AccountStatus" typeRef="string"/>
+  </inputData>
+
+  <inputData id="_id_requestorIsParty" name="RequestorIsParty">
+    <variable id="_v_requestorIsParty" name="RequestorIsParty" typeRef="boolean"/>
+  </inputData>
+
+  <inputData id="_id_mandatePermits" name="MandatePermits">
+    <variable id="_v_mandatePermits" name="MandatePermits" typeRef="boolean"/>
+  </inputData>
+
+  <inputData id="_id_channel" name="Channel">
+    <variable id="_v_channel" name="Channel" typeRef="string"/>
+  </inputData>
+
+  <inputData id="_id_screening" name="ScreeningOutcome">
+    <variable id="_v_screening" name="ScreeningOutcome" typeRef="string"/>
+  </inputData>
+
+  <inputData id="_id_inFlight" name="InFlightAmendment">
+    <variable id="_v_inFlight" name="InFlightAmendment" typeRef="boolean"/>
+  </inputData>
+
+  <inputData id="_id_isJoint" name="AccountIsJoint">
+    <variable id="_v_isJoint" name="AccountIsJoint" typeRef="boolean"/>
+  </inputData>
+
+  <inputData id="_id_riskBand" name="RiskBand">
+    <variable id="_v_riskBand" name="RiskBand" typeRef="string"/>
+  </inputData>
+
+  <decision id="_dec_admissibility" name="Admissibility">
+    <variable id="_v_dec_adm" name="Admissibility" typeRef="tAdmissibilityOutcome"/>
+    <informationRequirement id="_ir_1"><requiredInput href="#_id_type"/></informationRequirement>
+    <informationRequirement id="_ir_2"><requiredInput href="#_id_accountStatus"/></informationRequirement>
+    <informationRequirement id="_ir_3"><requiredInput href="#_id_requestorIsParty"/></informationRequirement>
+    <informationRequirement id="_ir_4"><requiredInput href="#_id_mandatePermits"/></informationRequirement>
+    <informationRequirement id="_ir_5"><requiredInput href="#_id_channel"/></informationRequirement>
+    <informationRequirement id="_ir_6"><requiredInput href="#_id_screening"/></informationRequirement>
+    <informationRequirement id="_ir_7"><requiredInput href="#_id_inFlight"/></informationRequirement>
+    <informationRequirement id="_ir_8"><requiredInput href="#_id_isJoint"/></informationRequirement>
+    <informationRequirement id="_ir_9"><requiredInput href="#_id_riskBand"/></informationRequirement>
+
+    <decisionTable id="_dt_adm" hitPolicy="FIRST" outputLabel="Admissibility">
+      <input id="_i_a" label="Requestor is party"><inputExpression id="_ie_a" typeRef="boolean"><text>RequestorIsParty</text></inputExpression></input>
+      <input id="_i_b" label="Mandate permits"><inputExpression id="_ie_b" typeRef="boolean"><text>MandatePermits</text></inputExpression></input>
+      <input id="_i_c" label="Screening"><inputExpression id="_ie_c" typeRef="string"><text>ScreeningOutcome</text></inputExpression></input>
+      <input id="_i_d" label="Account status"><inputExpression id="_ie_d" typeRef="string"><text>AccountStatus</text></inputExpression></input>
+      <input id="_i_e" label="In-flight amendment"><inputExpression id="_ie_e" typeRef="boolean"><text>InFlightAmendment</text></inputExpression></input>
+      <input id="_i_f" label="Type"><inputExpression id="_ie_f" typeRef="string"><text>AmendmentType</text></inputExpression></input>
+      <input id="_i_g" label="Account is joint"><inputExpression id="_ie_g" typeRef="boolean"><text>AccountIsJoint</text></inputExpression></input>
+      <input id="_i_h" label="Channel"><inputExpression id="_ie_h" typeRef="string"><text>Channel</text></inputExpression></input>
+      <input id="_i_i" label="Risk band"><inputExpression id="_ie_i" typeRef="string"><text>RiskBand</text></inputExpression></input>
+
+      <output id="_o_1" name="admissibility" typeRef="tAdmissibility"/>
+      <output id="_o_2" name="reasonCode" typeRef="string"/>
+      <output id="_o_3" name="reasonText" typeRef="string"/>
+
+      <rule id="_r_1">
+        <inputEntry id="_r1i1"><text>false</text></inputEntry>
+        <inputEntry id="_r1i2"><text>-</text></inputEntry>
+        <inputEntry id="_r1i3"><text>-</text></inputEntry>
+        <inputEntry id="_r1i4"><text>-</text></inputEntry>
+        <inputEntry id="_r1i5"><text>-</text></inputEntry>
+        <inputEntry id="_r1i6"><text>-</text></inputEntry>
+        <inputEntry id="_r1i7"><text>-</text></inputEntry>
+        <inputEntry id="_r1i8"><text>-</text></inputEntry>
+        <inputEntry id="_r1i9"><text>-</text></inputEntry>
+        <outputEntry id="_r1o1"><text>"REFUSED"</text></outputEntry>
+        <outputEntry id="_r1o2"><text>"AUTH_NOT_PARTY"</text></outputEntry>
+        <outputEntry id="_r1o3"><text>"Requestor is not a party to this account"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_2">
+        <inputEntry id="_r2i1"><text>-</text></inputEntry>
+        <inputEntry id="_r2i2"><text>false</text></inputEntry>
+        <inputEntry id="_r2i3"><text>-</text></inputEntry>
+        <inputEntry id="_r2i4"><text>-</text></inputEntry>
+        <inputEntry id="_r2i5"><text>-</text></inputEntry>
+        <inputEntry id="_r2i6"><text>-</text></inputEntry>
+        <inputEntry id="_r2i7"><text>-</text></inputEntry>
+        <inputEntry id="_r2i8"><text>-</text></inputEntry>
+        <inputEntry id="_r2i9"><text>-</text></inputEntry>
+        <outputEntry id="_r2o1"><text>"REFUSED"</text></outputEntry>
+        <outputEntry id="_r2o2"><text>"AUTH_MANDATE_INSUFFICIENT"</text></outputEntry>
+        <outputEntry id="_r2o3"><text>"Account mandate does not permit this amendment"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_3">
+        <inputEntry id="_r3i1"><text>-</text></inputEntry>
+        <inputEntry id="_r3i2"><text>-</text></inputEntry>
+        <inputEntry id="_r3i3"><text>"CONFIRMED_HIT"</text></inputEntry>
+        <inputEntry id="_r3i4"><text>-</text></inputEntry>
+        <inputEntry id="_r3i5"><text>-</text></inputEntry>
+        <inputEntry id="_r3i6"><text>-</text></inputEntry>
+        <inputEntry id="_r3i7"><text>-</text></inputEntry>
+        <inputEntry id="_r3i8"><text>-</text></inputEntry>
+        <inputEntry id="_r3i9"><text>-</text></inputEntry>
+        <outputEntry id="_r3o1"><text>"REFUSED"</text></outputEntry>
+        <outputEntry id="_r3o2"><text>"SCREENING_HIT"</text></outputEntry>
+        <outputEntry id="_r3o3"><text>"Referred to financial crime for investigation"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_4">
+        <inputEntry id="_r4i1"><text>-</text></inputEntry>
+        <inputEntry id="_r4i2"><text>-</text></inputEntry>
+        <inputEntry id="_r4i3"><text>"POTENTIAL_MATCH","UNAVAILABLE"</text></inputEntry>
+        <inputEntry id="_r4i4"><text>-</text></inputEntry>
+        <inputEntry id="_r4i5"><text>-</text></inputEntry>
+        <inputEntry id="_r4i6"><text>-</text></inputEntry>
+        <inputEntry id="_r4i7"><text>-</text></inputEntry>
+        <inputEntry id="_r4i8"><text>-</text></inputEntry>
+        <inputEntry id="_r4i9"><text>-</text></inputEntry>
+        <outputEntry id="_r4o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_r4o2"><text>"SCREENING_INCONCLUSIVE"</text></outputEntry>
+        <outputEntry id="_r4o3"><text>"Screening requires manual disposition"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_5">
+        <inputEntry id="_r5i1"><text>-</text></inputEntry>
+        <inputEntry id="_r5i2"><text>-</text></inputEntry>
+        <inputEntry id="_r5i3"><text>-</text></inputEntry>
+        <inputEntry id="_r5i4"><text>"BLOCKED","CLOSED","IN_CLOSURE"</text></inputEntry>
+        <inputEntry id="_r5i5"><text>-</text></inputEntry>
+        <inputEntry id="_r5i6"><text>-</text></inputEntry>
+        <inputEntry id="_r5i7"><text>-</text></inputEntry>
+        <inputEntry id="_r5i8"><text>-</text></inputEntry>
+        <inputEntry id="_r5i9"><text>-</text></inputEntry>
+        <outputEntry id="_r5o1"><text>"REFUSED"</text></outputEntry>
+        <outputEntry id="_r5o2"><text>"ACCOUNT_NOT_AMENDABLE"</text></outputEntry>
+        <outputEntry id="_r5o3"><text>"Account status does not permit amendments"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_6">
+        <inputEntry id="_r6i1"><text>-</text></inputEntry>
+        <inputEntry id="_r6i2"><text>-</text></inputEntry>
+        <inputEntry id="_r6i3"><text>-</text></inputEntry>
+        <inputEntry id="_r6i4"><text>"FROZEN","DORMANT"</text></inputEntry>
+        <inputEntry id="_r6i5"><text>-</text></inputEntry>
+        <inputEntry id="_r6i6"><text>-</text></inputEntry>
+        <inputEntry id="_r6i7"><text>-</text></inputEntry>
+        <inputEntry id="_r6i8"><text>-</text></inputEntry>
+        <inputEntry id="_r6i9"><text>-</text></inputEntry>
+        <outputEntry id="_r6o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_r6o2"><text>"ACCOUNT_RESTRICTED"</text></outputEntry>
+        <outputEntry id="_r6o3"><text>"Account restriction requires manual review"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_7">
+        <inputEntry id="_r7i1"><text>-</text></inputEntry>
+        <inputEntry id="_r7i2"><text>-</text></inputEntry>
+        <inputEntry id="_r7i3"><text>-</text></inputEntry>
+        <inputEntry id="_r7i4"><text>-</text></inputEntry>
+        <inputEntry id="_r7i5"><text>true</text></inputEntry>
+        <inputEntry id="_r7i6"><text>-</text></inputEntry>
+        <inputEntry id="_r7i7"><text>-</text></inputEntry>
+        <inputEntry id="_r7i8"><text>-</text></inputEntry>
+        <inputEntry id="_r7i9"><text>-</text></inputEntry>
+        <outputEntry id="_r7o1"><text>"REFUSED"</text></outputEntry>
+        <outputEntry id="_r7o2"><text>"CONFLICTING_IN_FLIGHT"</text></outputEntry>
+        <outputEntry id="_r7o3"><text>"A conflicting amendment is already in progress"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_8">
+        <inputEntry id="_r8i1"><text>-</text></inputEntry>
+        <inputEntry id="_r8i2"><text>-</text></inputEntry>
+        <inputEntry id="_r8i3"><text>-</text></inputEntry>
+        <inputEntry id="_r8i4"><text>-</text></inputEntry>
+        <inputEntry id="_r8i5"><text>-</text></inputEntry>
+        <inputEntry id="_r8i6"><text>"JOINT_TO_SOLE"</text></inputEntry>
+        <inputEntry id="_r8i7"><text>false</text></inputEntry>
+        <inputEntry id="_r8i8"><text>-</text></inputEntry>
+        <inputEntry id="_r8i9"><text>-</text></inputEntry>
+        <outputEntry id="_r8o1"><text>"REFUSED"</text></outputEntry>
+        <outputEntry id="_r8o2"><text>"NOT_JOINT_ACCOUNT"</text></outputEntry>
+        <outputEntry id="_r8o3"><text>"Account is not a joint account"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_9">
+        <inputEntry id="_r9i1"><text>-</text></inputEntry>
+        <inputEntry id="_r9i2"><text>-</text></inputEntry>
+        <inputEntry id="_r9i3"><text>-</text></inputEntry>
+        <inputEntry id="_r9i4"><text>-</text></inputEntry>
+        <inputEntry id="_r9i5"><text>-</text></inputEntry>
+        <inputEntry id="_r9i6"><text>"JOINT_TO_SOLE"</text></inputEntry>
+        <inputEntry id="_r9i7"><text>-</text></inputEntry>
+        <inputEntry id="_r9i8"><text>"DIGITAL","MOBILE"</text></inputEntry>
+        <inputEntry id="_r9i9"><text>-</text></inputEntry>
+        <outputEntry id="_r9o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_r9o2"><text>"CHANNEL_REQUIRES_REVIEW"</text></outputEntry>
+        <outputEntry id="_r9o3"><text>"Conversion submitted digitally requires assisted review"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_10">
+        <inputEntry id="_r10i1"><text>-</text></inputEntry>
+        <inputEntry id="_r10i2"><text>-</text></inputEntry>
+        <inputEntry id="_r10i3"><text>-</text></inputEntry>
+        <inputEntry id="_r10i4"><text>-</text></inputEntry>
+        <inputEntry id="_r10i5"><text>-</text></inputEntry>
+        <inputEntry id="_r10i6"><text>-</text></inputEntry>
+        <inputEntry id="_r10i7"><text>-</text></inputEntry>
+        <inputEntry id="_r10i8"><text>-</text></inputEntry>
+        <inputEntry id="_r10i9"><text>"HIGH"</text></inputEntry>
+        <outputEntry id="_r10o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_r10o2"><text>"HIGH_RISK_CUSTOMER"</text></outputEntry>
+        <outputEntry id="_r10o3"><text>"High risk band requires manual review"</text></outputEntry>
+      </rule>
+
+      <rule id="_r_11">
+        <inputEntry id="_r11i1"><text>-</text></inputEntry>
+        <inputEntry id="_r11i2"><text>-</text></inputEntry>
+        <inputEntry id="_r11i3"><text>-</text></inputEntry>
+        <inputEntry id="_r11i4"><text>-</text></inputEntry>
+        <inputEntry id="_r11i5"><text>-</text></inputEntry>
+        <inputEntry id="_r11i6"><text>-</text></inputEntry>
+        <inputEntry id="_r11i7"><text>-</text></inputEntry>
+        <inputEntry id="_r11i8"><text>-</text></inputEntry>
+        <inputEntry id="_r11i9"><text>-</text></inputEntry>
+        <outputEntry id="_r11o1"><text>"PERMITTED"</text></outputEntry>
+        <outputEntry id="_r11o2"><text>"OK"</text></outputEntry>
+        <outputEntry id="_r11o3"><text>"Admissible for processing"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="_diag">
+      <dmndi:DMNShape id="_sh_dec" dmnElementRef="_dec_admissibility">
+        <dc:Bounds x="300" y="60" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

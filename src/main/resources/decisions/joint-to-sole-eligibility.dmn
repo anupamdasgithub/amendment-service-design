@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="_jts_eligibility"
+             name="JointToSoleEligibility"
+             namespace="https://bank.com/dmn/amendments"
+             exporter="Manual"
+             exporterVersion="1.0">
+
+  <itemDefinition id="_jt_Outcome" name="tJtsOutcome" isCollection="false">
+    <itemComponent id="_jic_1" name="outcome">
+      <typeRef>string</typeRef>
+    </itemComponent>
+    <itemComponent id="_jic_2" name="reasonCode">
+      <typeRef>string</typeRef>
+    </itemComponent>
+    <itemComponent id="_jic_3" name="divertToJourney">
+      <typeRef>string</typeRef>
+    </itemComponent>
+    <itemComponent id="_jic_4" name="requiresUnderwriting">
+      <typeRef>boolean</typeRef>
+    </itemComponent>
+  </itemDefinition>
+
+  <inputData id="_jid_deceased" name="AnyPartyDeceased">
+    <variable id="_jv_deceased" name="AnyPartyDeceased" typeRef="boolean"/>
+  </inputData>
+  <inputData id="_jid_incap" name="AnyPartyIncapacitated">
+    <variable id="_jv_incap" name="AnyPartyIncapacitated" typeRef="boolean"/>
+  </inputData>
+  <inputData id="_jid_consent" name="AllConsentsGranted">
+    <variable id="_jv_consent" name="AllConsentsGranted" typeRef="boolean"/>
+  </inputData>
+  <inputData id="_jid_liab" name="JointLiabilities">
+    <variable id="_jv_liab" name="JointLiabilities" typeRef="boolean"/>
+  </inputData>
+  <inputData id="_jid_od" name="OverdraftBalance">
+    <variable id="_jv_od" name="OverdraftBalance" typeRef="number"/>
+  </inputData>
+  <inputData id="_jid_linked" name="LinkedProducts">
+    <variable id="_jv_linked" name="LinkedProducts" typeRef="boolean"/>
+  </inputData>
+  <inputData id="_jid_elig" name="RemainingPartyEligible">
+    <variable id="_jv_elig" name="RemainingPartyEligible" typeRef="boolean"/>
+  </inputData>
+
+  <decision id="_jdec" name="JtsEligibility">
+    <variable id="_jv_dec" name="JtsEligibility" typeRef="tJtsOutcome"/>
+    <informationRequirement id="_jr_1"><requiredInput href="#_jid_deceased"/></informationRequirement>
+    <informationRequirement id="_jr_2"><requiredInput href="#_jid_incap"/></informationRequirement>
+    <informationRequirement id="_jr_3"><requiredInput href="#_jid_consent"/></informationRequirement>
+    <informationRequirement id="_jr_4"><requiredInput href="#_jid_liab"/></informationRequirement>
+    <informationRequirement id="_jr_5"><requiredInput href="#_jid_od"/></informationRequirement>
+    <informationRequirement id="_jr_6"><requiredInput href="#_jid_linked"/></informationRequirement>
+    <informationRequirement id="_jr_7"><requiredInput href="#_jid_elig"/></informationRequirement>
+
+    <decisionTable id="_jdt" hitPolicy="FIRST" outputLabel="JtsEligibility">
+      <input id="_ji_a" label="Any party deceased"><inputExpression id="_jie_a" typeRef="boolean"><text>AnyPartyDeceased</text></inputExpression></input>
+      <input id="_ji_b" label="Any party incapacitated"><inputExpression id="_jie_b" typeRef="boolean"><text>AnyPartyIncapacitated</text></inputExpression></input>
+      <input id="_ji_c" label="All consents granted"><inputExpression id="_jie_c" typeRef="boolean"><text>AllConsentsGranted</text></inputExpression></input>
+      <input id="_ji_d" label="Joint liabilities"><inputExpression id="_jie_d" typeRef="boolean"><text>JointLiabilities</text></inputExpression></input>
+      <input id="_ji_e" label="Overdraft balance"><inputExpression id="_jie_e" typeRef="number"><text>OverdraftBalance</text></inputExpression></input>
+      <input id="_ji_f" label="Linked products"><inputExpression id="_jie_f" typeRef="boolean"><text>LinkedProducts</text></inputExpression></input>
+      <input id="_ji_g" label="Remaining party eligible"><inputExpression id="_jie_g" typeRef="boolean"><text>RemainingPartyEligible</text></inputExpression></input>
+
+      <output id="_jo_1" name="outcome" typeRef="string"/>
+      <output id="_jo_2" name="reasonCode" typeRef="string"/>
+      <output id="_jo_3" name="divertToJourney" typeRef="string"/>
+      <output id="_jo_4" name="requiresUnderwriting" typeRef="boolean"/>
+
+      <rule id="_jr_r1">
+        <inputEntry id="_jr1i1"><text>true</text></inputEntry>
+        <inputEntry id="_jr1i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr1i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr1i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr1i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr1i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr1i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr1o1"><text>"DIVERTED"</text></outputEntry>
+        <outputEntry id="_jr1o2"><text>"PARTY_DECEASED"</text></outputEntry>
+        <outputEntry id="_jr1o3"><text>"BEREAVEMENT"</text></outputEntry>
+        <outputEntry id="_jr1o4"><text>false</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r2">
+        <inputEntry id="_jr2i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr2i2"><text>true</text></inputEntry>
+        <inputEntry id="_jr2i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr2i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr2i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr2i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr2i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr2o1"><text>"DIVERTED"</text></outputEntry>
+        <outputEntry id="_jr2o2"><text>"PARTY_INCAPACITATED"</text></outputEntry>
+        <outputEntry id="_jr2o3"><text>"POWER_OF_ATTORNEY"</text></outputEntry>
+        <outputEntry id="_jr2o4"><text>false</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r3">
+        <inputEntry id="_jr3i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr3i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr3i3"><text>false</text></inputEntry>
+        <inputEntry id="_jr3i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr3i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr3i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr3i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr3o1"><text>"BLOCKED"</text></outputEntry>
+        <outputEntry id="_jr3o2"><text>"CONSENT_OUTSTANDING"</text></outputEntry>
+        <outputEntry id="_jr3o3"><text>""</text></outputEntry>
+        <outputEntry id="_jr3o4"><text>false</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r4">
+        <inputEntry id="_jr4i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr4i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr4i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr4i4"><text>true</text></inputEntry>
+        <inputEntry id="_jr4i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr4i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr4i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr4o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_jr4o2"><text>"JOINT_LIABILITY_PRESENT"</text></outputEntry>
+        <outputEntry id="_jr4o3"><text>""</text></outputEntry>
+        <outputEntry id="_jr4o4"><text>true</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r5">
+        <inputEntry id="_jr5i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr5i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr5i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr5i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr5i5"><text>&gt; 0</text></inputEntry>
+        <inputEntry id="_jr5i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr5i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr5o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_jr5o2"><text>"OVERDRAWN_BALANCE"</text></outputEntry>
+        <outputEntry id="_jr5o3"><text>""</text></outputEntry>
+        <outputEntry id="_jr5o4"><text>true</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r6">
+        <inputEntry id="_jr6i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr6i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr6i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr6i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr6i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr6i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr6i7"><text>false</text></inputEntry>
+        <outputEntry id="_jr6o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_jr6o2"><text>"SOLE_HOLDER_NOT_ELIGIBLE"</text></outputEntry>
+        <outputEntry id="_jr6o3"><text>""</text></outputEntry>
+        <outputEntry id="_jr6o4"><text>true</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r7">
+        <inputEntry id="_jr7i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr7i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr7i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr7i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr7i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr7i6"><text>true</text></inputEntry>
+        <inputEntry id="_jr7i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr7o1"><text>"REVIEW_REQUIRED"</text></outputEntry>
+        <outputEntry id="_jr7o2"><text>"LINKED_PRODUCTS_PRESENT"</text></outputEntry>
+        <outputEntry id="_jr7o3"><text>""</text></outputEntry>
+        <outputEntry id="_jr7o4"><text>false</text></outputEntry>
+      </rule>
+
+      <rule id="_jr_r8">
+        <inputEntry id="_jr8i1"><text>-</text></inputEntry>
+        <inputEntry id="_jr8i2"><text>-</text></inputEntry>
+        <inputEntry id="_jr8i3"><text>-</text></inputEntry>
+        <inputEntry id="_jr8i4"><text>-</text></inputEntry>
+        <inputEntry id="_jr8i5"><text>-</text></inputEntry>
+        <inputEntry id="_jr8i6"><text>-</text></inputEntry>
+        <inputEntry id="_jr8i7"><text>-</text></inputEntry>
+        <outputEntry id="_jr8o1"><text>"ELIGIBLE"</text></outputEntry>
+        <outputEntry id="_jr8o2"><text>"OK"</text></outputEntry>
+        <outputEntry id="_jr8o3"><text>""</text></outputEntry>
+        <outputEntry id="_jr8o4"><text>false</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="_jdiag">
+      <dmndi:DMNShape id="_jsh" dmnElementRef="_jdec">
+        <dc:Bounds x="300" y="60" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

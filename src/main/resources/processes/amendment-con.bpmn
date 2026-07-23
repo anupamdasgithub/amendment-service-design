@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   id="_con_defs"
+                   targetNamespace="https://bank.com/bpmn/amendments"
+                   exporter="Manual" exporterVersion="1.0">
+
+  <bpmn2:itemDefinition id="_n_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
+  <bpmn2:itemDefinition id="_n_itemString" structureRef="String"/>
+
+  <bpmn2:process id="amendment-con" name="Change of Name" isExecutable="true" processType="Public">
+
+    <bpmn2:property id="item" itemSubjectRef="_n_itemItem" name="item"/>
+    <bpmn2:property id="requestId" itemSubjectRef="_n_itemString" name="requestId"/>
+
+    <bpmn2:startEvent id="n_start" name="Start"><bpmn2:outgoing>nf1</bpmn2:outgoing></bpmn2:startEvent>
+
+    <bpmn2:businessRuleTask id="n_evidence_rule" name="Determine required evidence"
+                            implementation="http://www.jboss.org/drools/dmn">
+      <bpmn2:incoming>nf1</bpmn2:incoming><bpmn2:outgoing>nf2</bpmn2:outgoing>
+    </bpmn2:businessRuleTask>
+
+    <bpmn2:userTask id="n_collect" name="Collect and verify name evidence">
+      <bpmn2:incoming>nf2</bpmn2:incoming><bpmn2:outgoing>nf3</bpmn2:outgoing>
+      <bpmn2:potentialOwner id="_n_po">
+        <bpmn2:resourceAssignmentExpression id="_n_rae">
+          <bpmn2:formalExpression>amendments-ops</bpmn2:formalExpression>
+        </bpmn2:resourceAssignmentExpression>
+      </bpmn2:potentialOwner>
+      <bpmn2:boundaryEventRefs>n_collect_timer</bpmn2:boundaryEventRefs>
+    </bpmn2:userTask>
+
+    <bpmn2:boundaryEvent id="n_collect_timer" name="Evidence SLA" attachedToRef="n_collect" cancelActivity="false">
+      <bpmn2:outgoing>nf_timer</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="_n_ted">
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">PT72H</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:boundaryEvent>
+
+    <bpmn2:serviceTask id="n_remind" name="Send evidence reminder"
+                       implementation="##WebService" operationRef="_op_notify">
+      <bpmn2:incoming>nf_timer</bpmn2:incoming><bpmn2:outgoing>nf_remind_out</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="n_remind_end"><bpmn2:incoming>nf_remind_out</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:serviceTask id="n_rescreen" name="Re-screen under new name"
+                       implementation="##WebService" operationRef="_op_screening">
+      <bpmn2:incoming>nf3</bpmn2:incoming><bpmn2:outgoing>nf4</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+
+    <bpmn2:exclusiveGateway id="n_gw_screen" name="Screening clear" gatewayDirection="Diverging">
+      <bpmn2:incoming>nf4</bpmn2:incoming>
+      <bpmn2:outgoing>nf_clear</bpmn2:outgoing>
+      <bpmn2:outgoing>nf_refer</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+
+    <bpmn2:userTask id="n_refer" name="Financial crime disposition">
+      <bpmn2:incoming>nf_refer</bpmn2:incoming><bpmn2:outgoing>nf_refer_out</bpmn2:outgoing>
+      <bpmn2:potentialOwner id="_n_po2">
+        <bpmn2:resourceAssignmentExpression id="_n_rae2">
+          <bpmn2:formalExpression>financial-crime</bpmn2:formalExpression>
+        </bpmn2:resourceAssignmentExpression>
+      </bpmn2:potentialOwner>
+    </bpmn2:userTask>
+
+    <bpmn2:exclusiveGateway id="n_gw_join" name="Join" gatewayDirection="Converging">
+      <bpmn2:incoming>nf_clear</bpmn2:incoming>
+      <bpmn2:incoming>nf_refer_out</bpmn2:incoming>
+      <bpmn2:outgoing>nf5</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+
+    <bpmn2:userTask id="n_approve" name="Maker checker approval">
+      <bpmn2:incoming>nf5</bpmn2:incoming><bpmn2:outgoing>nf6</bpmn2:outgoing>
+      <bpmn2:potentialOwner id="_n_po3">
+        <bpmn2:resourceAssignmentExpression id="_n_rae3">
+          <bpmn2:formalExpression>amendments-checker</bpmn2:formalExpression>
+        </bpmn2:resourceAssignmentExpression>
+      </bpmn2:potentialOwner>
+    </bpmn2:userTask>
+
+    <bpmn2:serviceTask id="n_apply" name="Apply name in core banking"
+                       implementation="##WebService" operationRef="_op_core_name">
+      <bpmn2:incoming>nf6</bpmn2:incoming><bpmn2:outgoing>nf7</bpmn2:outgoing>
+      <bpmn2:boundaryEventRefs>n_apply_error</bpmn2:boundaryEventRefs>
+    </bpmn2:serviceTask>
+
+    <bpmn2:boundaryEvent id="n_apply_error" name="Core failure" attachedToRef="n_apply" cancelActivity="true">
+      <bpmn2:outgoing>nf_err</bpmn2:outgoing>
+      <bpmn2:errorEventDefinition id="_n_eed" errorRef="_n_err"/>
+    </bpmn2:boundaryEvent>
+
+    <bpmn2:serviceTask id="n_fail" name="Record failure and refer"
+                       implementation="##WebService" operationRef="_op_fail">
+      <bpmn2:incoming>nf_err</bpmn2:incoming><bpmn2:outgoing>nf_err_out</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:endEvent id="n_end_failed" name="Failed"><bpmn2:incoming>nf_err_out</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:serviceTask id="n_reissue" name="Trigger card reissue"
+                       implementation="##WebService" operationRef="_op_card">
+      <bpmn2:incoming>nf7</bpmn2:incoming><bpmn2:outgoing>nf8</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+
+    <bpmn2:endEvent id="n_end" name="Applied"><bpmn2:incoming>nf8</bpmn2:incoming></bpmn2:endEvent>
+
+    <bpmn2:sequenceFlow id="nf1" sourceRef="n_start" targetRef="n_evidence_rule"/>
+    <bpmn2:sequenceFlow id="nf2" sourceRef="n_evidence_rule" targetRef="n_collect"/>
+    <bpmn2:sequenceFlow id="nf3" sourceRef="n_collect" targetRef="n_rescreen"/>
+    <bpmn2:sequenceFlow id="nf_timer" sourceRef="n_collect_timer" targetRef="n_remind"/>
+    <bpmn2:sequenceFlow id="nf_remind_out" sourceRef="n_remind" targetRef="n_remind_end"/>
+    <bpmn2:sequenceFlow id="nf4" sourceRef="n_rescreen" targetRef="n_gw_screen"/>
+    <bpmn2:sequenceFlow id="nf_clear" sourceRef="n_gw_screen" targetRef="n_gw_join">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.con.rescreenResult.outcome = "CLEAR"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="nf_refer" sourceRef="n_gw_screen" targetRef="n_refer">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.con.rescreenResult.outcome != "CLEAR"</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="nf_refer_out" sourceRef="n_refer" targetRef="n_gw_join"/>
+    <bpmn2:sequenceFlow id="nf5" sourceRef="n_gw_join" targetRef="n_approve"/>
+    <bpmn2:sequenceFlow id="nf6" sourceRef="n_approve" targetRef="n_apply"/>
+    <bpmn2:sequenceFlow id="nf7" sourceRef="n_apply" targetRef="n_reissue"/>
+    <bpmn2:sequenceFlow id="nf8" sourceRef="n_reissue" targetRef="n_end"/>
+    <bpmn2:sequenceFlow id="nf_err" sourceRef="n_apply_error" targetRef="n_fail"/>
+    <bpmn2:sequenceFlow id="nf_err_out" sourceRef="n_fail" targetRef="n_end_failed"/>
+  </bpmn2:process>
+
+  <bpmn2:error id="_n_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
+
+  <bpmndi:BPMNDiagram id="_n_diag">
+    <bpmndi:BPMNPlane id="_n_plane" bpmnElement="amendment-con">
+      <bpmndi:BPMNShape id="_ns_start" bpmnElement="n_start"><dc:Bounds x="60" y="120" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_rule" bpmnElement="n_evidence_rule"><dc:Bounds x="140" y="98" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_collect" bpmnElement="n_collect"><dc:Bounds x="300" y="98" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_res" bpmnElement="n_rescreen"><dc:Bounds x="460" y="98" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_gw" bpmnElement="n_gw_screen"><dc:Bounds x="620" y="118" width="40" height="40"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_approve" bpmnElement="n_approve"><dc:Bounds x="780" y="98" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_apply" bpmnElement="n_apply"><dc:Bounds x="940" y="98" width="120" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_ns_end" bpmnElement="n_end"><dc:Bounds x="1260" y="120" width="36" height="36"/></bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

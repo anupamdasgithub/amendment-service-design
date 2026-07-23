@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
+             xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
+             xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             id="_amendment_sequencing"
+             name="AmendmentSequencing"
+             namespace="https://bank.com/dmn/amendments"
+             exporter="Manual"
+             exporterVersion="1.0">
+
+  <itemDefinition id="_it_Mode" name="tExecutionMode" isCollection="false">
+    <typeRef>string</typeRef>
+    <typeConstraint id="_tc_mode">
+      <text>"PARALLEL","SEQUENTIAL"</text>
+    </typeConstraint>
+  </itemDefinition>
+
+  <itemDefinition id="_it_Plan" name="tExecutionPlan" isCollection="false">
+    <itemComponent id="_ic_p1" name="mode">
+      <typeRef>tExecutionMode</typeRef>
+    </itemComponent>
+    <itemComponent id="_ic_p2" name="orderedSequence">
+      <typeRef>string</typeRef>
+      <itemComponent id="_ic_p2a" name="item">
+        <typeRef>string</typeRef>
+      </itemComponent>
+    </itemComponent>
+    <itemComponent id="_ic_p3" name="rationale">
+      <typeRef>string</typeRef>
+    </itemComponent>
+  </itemDefinition>
+
+  <inputData id="_id_permitted" name="PermittedTypes">
+    <variable id="_v_permitted" name="PermittedTypes" typeRef="string" isCollection="true"/>
+  </inputData>
+
+  <inputData id="_id_count" name="PermittedCount">
+    <variable id="_v_count" name="PermittedCount" typeRef="number"/>
+  </inputData>
+
+  <inputData id="_id_hasJts" name="IncludesJointToSole">
+    <variable id="_v_hasJts" name="IncludesJointToSole" typeRef="boolean"/>
+  </inputData>
+
+  <inputData id="_id_hasCon" name="IncludesCon">
+    <variable id="_v_hasCon" name="IncludesCon" typeRef="boolean"/>
+  </inputData>
+
+  <inputData id="_id_hasCoa" name="IncludesCoa">
+    <variable id="_v_hasCoa" name="IncludesCoa" typeRef="boolean"/>
+  </inputData>
+
+  <decision id="_dec_sequencing" name="ExecutionPlan">
+    <variable id="_v_dec_plan" name="ExecutionPlan" typeRef="tExecutionPlan"/>
+    <informationRequirement id="_sr_1"><requiredInput href="#_id_count"/></informationRequirement>
+    <informationRequirement id="_sr_2"><requiredInput href="#_id_hasJts"/></informationRequirement>
+    <informationRequirement id="_sr_3"><requiredInput href="#_id_hasCon"/></informationRequirement>
+    <informationRequirement id="_sr_4"><requiredInput href="#_id_hasCoa"/></informationRequirement>
+
+    <decisionTable id="_dt_seq" hitPolicy="FIRST" outputLabel="ExecutionPlan">
+      <input id="_si_a" label="Permitted count"><inputExpression id="_sie_a" typeRef="number"><text>PermittedCount</text></inputExpression></input>
+      <input id="_si_b" label="Includes joint to sole"><inputExpression id="_sie_b" typeRef="boolean"><text>IncludesJointToSole</text></inputExpression></input>
+      <input id="_si_c" label="Includes CoN"><inputExpression id="_sie_c" typeRef="boolean"><text>IncludesCon</text></inputExpression></input>
+      <input id="_si_d" label="Includes CoA"><inputExpression id="_sie_d" typeRef="boolean"><text>IncludesCoa</text></inputExpression></input>
+
+      <output id="_so_1" name="mode" typeRef="tExecutionMode"/>
+      <output id="_so_2" name="orderedSequence" typeRef="string"/>
+      <output id="_so_3" name="rationale" typeRef="string"/>
+
+      <rule id="_sr_r1">
+        <inputEntry id="_sr1i1"><text>&lt;= 1</text></inputEntry>
+        <inputEntry id="_sr1i2"><text>-</text></inputEntry>
+        <inputEntry id="_sr1i3"><text>-</text></inputEntry>
+        <inputEntry id="_sr1i4"><text>-</text></inputEntry>
+        <outputEntry id="_sr1o1"><text>"PARALLEL"</text></outputEntry>
+        <outputEntry id="_sr1o2"><text>""</text></outputEntry>
+        <outputEntry id="_sr1o3"><text>"Single amendment, no sequencing required"</text></outputEntry>
+      </rule>
+
+      <rule id="_sr_r2">
+        <inputEntry id="_sr2i1"><text>-</text></inputEntry>
+        <inputEntry id="_sr2i2"><text>true</text></inputEntry>
+        <inputEntry id="_sr2i3"><text>true</text></inputEntry>
+        <inputEntry id="_sr2i4"><text>true</text></inputEntry>
+        <outputEntry id="_sr2o1"><text>"SEQUENTIAL"</text></outputEntry>
+        <outputEntry id="_sr2o2"><text>"CON,COA,JOINT_TO_SOLE"</text></outputEntry>
+        <outputEntry id="_sr2o3"><text>"Identity and address settled before account restructure"</text></outputEntry>
+      </rule>
+
+      <rule id="_sr_r3">
+        <inputEntry id="_sr3i1"><text>-</text></inputEntry>
+        <inputEntry id="_sr3i2"><text>true</text></inputEntry>
+        <inputEntry id="_sr3i3"><text>true</text></inputEntry>
+        <inputEntry id="_sr3i4"><text>false</text></inputEntry>
+        <outputEntry id="_sr3o1"><text>"SEQUENTIAL"</text></outputEntry>
+        <outputEntry id="_sr3o2"><text>"CON,JOINT_TO_SOLE"</text></outputEntry>
+        <outputEntry id="_sr3o3"><text>"Name change must complete before conversion"</text></outputEntry>
+      </rule>
+
+      <rule id="_sr_r4">
+        <inputEntry id="_sr4i1"><text>-</text></inputEntry>
+        <inputEntry id="_sr4i2"><text>true</text></inputEntry>
+        <inputEntry id="_sr4i3"><text>false</text></inputEntry>
+        <inputEntry id="_sr4i4"><text>true</text></inputEntry>
+        <outputEntry id="_sr4o1"><text>"SEQUENTIAL"</text></outputEntry>
+        <outputEntry id="_sr4o2"><text>"COA,JOINT_TO_SOLE"</text></outputEntry>
+        <outputEntry id="_sr4o3"><text>"Address settled before account restructure"</text></outputEntry>
+      </rule>
+
+      <rule id="_sr_r5">
+        <inputEntry id="_sr5i1"><text>-</text></inputEntry>
+        <inputEntry id="_sr5i2"><text>false</text></inputEntry>
+        <inputEntry id="_sr5i3"><text>true</text></inputEntry>
+        <inputEntry id="_sr5i4"><text>true</text></inputEntry>
+        <outputEntry id="_sr5o1"><text>"PARALLEL"</text></outputEntry>
+        <outputEntry id="_sr5o2"><text>""</text></outputEntry>
+        <outputEntry id="_sr5o3"><text>"Name and address changes are independent"</text></outputEntry>
+      </rule>
+
+      <rule id="_sr_r6">
+        <inputEntry id="_sr6i1"><text>-</text></inputEntry>
+        <inputEntry id="_sr6i2"><text>-</text></inputEntry>
+        <inputEntry id="_sr6i3"><text>-</text></inputEntry>
+        <inputEntry id="_sr6i4"><text>-</text></inputEntry>
+        <outputEntry id="_sr6o1"><text>"PARALLEL"</text></outputEntry>
+        <outputEntry id="_sr6o2"><text>""</text></outputEntry>
+        <outputEntry id="_sr6o3"><text>"Default parallel execution"</text></outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram id="_sdiag">
+      <dmndi:DMNShape id="_ssh_dec" dmnElementRef="_dec_sequencing">
+        <dc:Bounds x="300" y="60" width="180" height="80"/>
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

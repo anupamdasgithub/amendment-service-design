@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Validate BPMN files
+        run: python3 scripts/validate_bpmn_refs.py src/main/resources/processes
+
+      - name: Validate DMN decision tables
+        run: python3 scripts/validate_dmn_arity.py src/main/resources/decisions
+
+      # Model validation runs before the build: a malformed decision table
+      # fails faster here than waiting for code generation to choke on it.
+      - name: Build service (compile)
+        run: mvn -B -DskipTests compile
+
+      - name: Run decision tests
+        run: mvn -B test
+
+      - name: Publish test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: ignore

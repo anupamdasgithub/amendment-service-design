@@ -1,0 +1,112 @@
+spring:
+  application:
+    name: amendments-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/amendments}
+    username: ${DB_USER:amendments}
+    password: ${DB_PASSWORD:changeme}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      leak-detection-threshold: 60000
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER:https://login.microsoftonline.com/TENANT/v2.0}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+kogito:
+  service:
+    url: ${SERVICE_URL:http://localhost:8080}
+
+  # Instance state is checkpointed here at every wait state and read back
+  # to rehydrate. Per-service store, not a shared BPMDB.
+  persistence:
+    type: jdbc
+    query:
+      timeout:
+        millis: 10000
+
+  # Timers, SLA escalation, consent expiry. Replaces the BAW Event Manager
+  # polling model with a per-service scheduler.
+  jobs-service:
+    url: ${JOBS_SERVICE_URL:http://localhost:8580}
+
+  events:
+    processinstances:
+      enabled: true
+    usertasks:
+      enabled: true
+
+  # Correlation on the business key so replays do not spawn duplicate cases
+  correlation:
+    enabled: true
+
+mp:
+  messaging:
+    outgoing:
+      kogito-processinstances-events:
+        topic: amendments.process.events
+      kogito-usertaskinstances-events:
+        topic: amendments.task.events
+
+amendments:
+  sla:
+    request-hours: 120
+    evidence-hours: 72
+    consent-days: 14
+  core-banking:
+    base-url: ${CORE_BANKING_URL:https://core-banking.internal}
+    timeout-ms: 15000
+    retry-attempts: 3
+  screening:
+    base-url: ${SCREENING_URL:https://screening.internal}
+    timeout-ms: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  metrics:
+    tags:
+      application: amendments-service
+
+logging:
+  level:
+    root: INFO
+    com.bank.amendments: DEBUG
+    org.kie.kogito: INFO
+  pattern:
+    console: '{"ts":"%d{ISO8601}","level":"%level","corr":"%X{correlationId}","logger":"%logger{36}","msg":"%msg"}%n'
+
+server:
+  port: 8080
+  shutdown: graceful
