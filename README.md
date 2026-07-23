@@ -58,6 +58,30 @@ would force the parent to know the internals of all three journeys.
 first-class DMN output, not an afterthought. They are what the customer sees
 and what the regulator asks about.
 
+## Building
+
+**BAMOE artifacts are not on Maven Central.** IBM distributes them through a
+BAMOE Maven repository that you host locally, downloaded from IBM Fix Central.
+Building this project requires that repository to be configured and reachable.
+
+Point the build at it either by property:
+
+```bash
+mvn -Dbamoe.repo.url=http://localhost:8080/ compile
+```
+
+or by adding the repository to `~/.m2/settings.xml`, or by mirroring the
+BAMOE artifacts into your organisation's Nexus/Artifactory.
+
+Set `bamoe.version` in `pom.xml` to the release you are licensed for. Version
+strings carry an IBM build suffix — for example `9.4.2-ibm-0002` — so the bare
+`9.4.2` will not resolve.
+
+This is also why CI does not run `mvn compile`: a public GitHub Actions runner
+has no route to the IBM repository. CI validates the BPMN and DMN models and
+applies the SQL migrations against a real Postgres, both of which need no IBM
+artifacts. The Java build and the DMN unit tests run locally.
+
 ## Local development
 
 The inner loop runs entirely on this machine. Testing a rule change requires

@@ -10,21 +10,62 @@
   <packaging>jar</packaging>
   <name>Customer Account Amendments Service</name>
 
+  <!--
+    IMPORTANT — BAMOE artifacts are NOT on Maven Central.
+
+    IBM distributes them through a BAMOE Maven repository that you host
+    locally (downloaded from IBM Fix Central). Building this project requires
+    that repository to be configured and reachable, either in ~/.m2/settings.xml
+    or via the <repositories> block below.
+
+    This is why the GitHub Actions workflow validates the BPMN/DMN models but
+    does not attempt `mvn compile` — a public runner has no route to the IBM
+    repository. Java compilation and the DMN unit tests run locally.
+
+    See README.md "Building" for setup.
+  -->
+
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!--
-      Pin these to the BAMOE release selected for the programme.
-      Confirm the current supported version and its lifecycle dates
-      against IBM documentation before locking.
+      Pin to the BAMOE release licensed for the programme.
+      Version strings carry an IBM build suffix, e.g. 9.4.2-ibm-0002.
+      Confirm the exact string for your release before building.
     -->
-    <bamoe.version>9.5.0</bamoe.version>
+    <bamoe.version>9.4.2-ibm-0002</bamoe.version>
     <spring-boot.version>3.3.4</spring-boot.version>
+
+    <!-- Override with -Dbamoe.repo.url=<your repo> or in settings.xml -->
+    <bamoe.repo.url>http://localhost:8080/</bamoe.repo.url>
   </properties>
+
+  <repositories>
+    <!--
+      Point this at your BAMOE Maven repository. The default below matches
+      IBM's documented local repository; override with -Dbamoe.repo.url or
+      replace with your organisation's internal Nexus/Artifactory mirror.
+    -->
+    <repository>
+      <id>ibm-bamoe-enterprise-maven-repository</id>
+      <name>IBM BAMOE Enterprise Maven Repository</name>
+      <url>${bamoe.repo.url}</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>
+      <!-- Order matters: BAMOE BOM is imported before the Spring Boot BOM. -->
+      <dependency>
+        <groupId>com.ibm.bamoe</groupId>
+        <artifactId>bamoe-bom</artifactId>
+        <version>${bamoe.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -32,17 +73,20 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>org.kie</groupId>
-        <artifactId>kie-bom</artifactId>
-        <version>${bamoe.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
+    <!-- Mandatory pair for a workflow Business Service on Spring Boot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-with-drools-spring-boot-starter</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -53,10 +97,6 @@
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
     <dependency>
@@ -64,56 +104,97 @@
       <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
     </dependency>
 
-    <!-- Kogito / BAMOE engine: BPMN, DMN, rules, persistence -->
+    <!-- Stateful workflow persistence: instance state at wait states -->
     <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-spring-boot-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-bpmn-spring-boot-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-dmn-spring-boot-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-drools-spring-boot-starter</artifactId>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-springboot-persistence-jdbc</artifactId>
     </dependency>
 
-    <!-- Process persistence: instance state at wait states -->
+    <!-- Jobs Service: timers, SLA escalation, consent expiry -->
     <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-addons-springboot-persistence-jdbc</artifactId>
+      <groupId>org.kie</groupId>
+      <artifactId>kogito-addons-springboot-embedded-jobs-jpa</artifactId>
     </dependency>
 
-    <!-- Jobs service: timers, SLA escalation, consent expiry -->
+    <!-- User Tasks storage -->
     <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-addons-springboot-jobs-management</artifactId>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-addons-springboot-usertask-storage-jpa</artifactId>
     </dependency>
 
-    <!-- Process/task event emission for the data index and audit -->
+    <!-- Data-Index: queryable view backing the ops work queue -->
     <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-addons-springboot-events-process-kafka</artifactId>
+      <groupId>org.kie</groupId>
+      <artifactId>kogito-addons-springboot-data-index-jpa</artifactId>
     </dependency>
 
-    <!-- Human tasks -->
+    <!-- Data-Audit: regulatory audit trail -->
     <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-addons-springboot-task-management</artifactId>
+      <groupId>org.kie</groupId>
+      <artifactId>kogito-addons-springboot-data-audit-jpa</artifactId>
     </dependency>
 
-    <!-- Observability -->
+    <!-- Process lifecycle events -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-springboot-events-process</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-addons-springboot-monitoring-prometheus</artifactId>
+      <artifactId>kogito-addons-springboot-messaging</artifactId>
+    </dependency>
+
+    <!-- Process management REST operations -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-springboot-process-management</artifactId>
+    </dependency>
+
+    <!-- Supported REST work item handler for service task integration -->
+    <dependency>
+      <groupId>org.kie.kogito</groupId>
+      <artifactId>kogito-rest-workitem</artifactId>
+    </dependency>
+
+    <!--
+      AI task handlers. Not used by the current processes; retained because
+      assisted amendment triage is on the roadmap. Remove if not required.
+    -->
+    <!--
+    <dependency>
+      <groupId>com.ibm.bamoe</groupId>
+      <artifactId>bamoe-gen-ai-task-work-item-handler-spring-boot</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.bamoe</groupId>
+      <artifactId>bamoe-ai-agent-task-work-item-handler-spring-boot</artifactId>
+    </dependency>
+    -->
+
+    <!-- Monitoring -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-springboot-monitoring-prometheus</artifactId>
     </dependency>
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+
+    <!-- Dev and ops: process diagrams, source files, web console -->
+    <dependency>
+      <groupId>org.kie</groupId>
+      <artifactId>kie-addons-springboot-process-svg</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.bamoe</groupId>
+      <artifactId>bamoe-spring-boot-web-console</artifactId>
+    </dependency>
+
+    <!-- ILMT licence compliance tracking (PAMOE: workflow use case) -->
+    <dependency>
+      <groupId>com.ibm.bamoe</groupId>
+      <artifactId>bamoe-ilmt-compliance-spring-boot-pamoe</artifactId>
     </dependency>
 
     <dependency>
@@ -135,11 +216,11 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Test Scenarios (.scesim) support for DMN and BPMN -->
     <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-dmn-test-resources</artifactId>
+      <groupId>org.kie.kogito</groupId>
+      <artifactId>kogito-scenario-simulation</artifactId>
       <scope>test</scope>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
