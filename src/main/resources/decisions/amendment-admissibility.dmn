@@ -2,6 +2,7 @@
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
              xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
              xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/"
              id="_amendment_admissibility"
              name="AmendmentAdmissibility"
              namespace="https://bank.com/dmn/amendments"
@@ -10,16 +11,16 @@
 
   <itemDefinition id="_it_AmendmentType" name="tAmendmentType" isCollection="false">
     <typeRef>string</typeRef>
-    <typeConstraint id="_tc_type">
+    <allowedValues id="_tc_type">
       <text>"COA","CON","JOINT_TO_SOLE"</text>
-    </typeConstraint>
+    </allowedValues>
   </itemDefinition>
 
   <itemDefinition id="_it_Admissibility" name="tAdmissibility" isCollection="false">
     <typeRef>string</typeRef>
-    <typeConstraint id="_tc_adm">
+    <allowedValues id="_tc_adm">
       <text>"PERMITTED","REVIEW_REQUIRED","REFUSED"</text>
-    </typeConstraint>
+    </allowedValues>
   </itemDefinition>
 
   <itemDefinition id="_it_Outcome" name="tAdmissibilityOutcome" isCollection="false">
@@ -34,40 +35,40 @@
     </itemComponent>
   </itemDefinition>
 
-  <inputData id="_id_type" name="AmendmentType">
-    <variable id="_v_type" name="AmendmentType" typeRef="tAmendmentType"/>
+  <inputData id="_id_type" name="amendmentType">
+    <variable id="_v_type" name="amendmentType" typeRef="tAmendmentType"/>
   </inputData>
 
-  <inputData id="_id_accountStatus" name="AccountStatus">
-    <variable id="_v_accountStatus" name="AccountStatus" typeRef="string"/>
+  <inputData id="_id_accountStatus" name="accountStatus">
+    <variable id="_v_accountStatus" name="accountStatus" typeRef="string"/>
   </inputData>
 
-  <inputData id="_id_requestorIsParty" name="RequestorIsParty">
-    <variable id="_v_requestorIsParty" name="RequestorIsParty" typeRef="boolean"/>
+  <inputData id="_id_requestorIsParty" name="requestorIsParty">
+    <variable id="_v_requestorIsParty" name="requestorIsParty" typeRef="boolean"/>
   </inputData>
 
-  <inputData id="_id_mandatePermits" name="MandatePermits">
-    <variable id="_v_mandatePermits" name="MandatePermits" typeRef="boolean"/>
+  <inputData id="_id_mandatePermits" name="mandatePermits">
+    <variable id="_v_mandatePermits" name="mandatePermits" typeRef="boolean"/>
   </inputData>
 
-  <inputData id="_id_channel" name="Channel">
-    <variable id="_v_channel" name="Channel" typeRef="string"/>
+  <inputData id="_id_channel" name="channel">
+    <variable id="_v_channel" name="channel" typeRef="string"/>
   </inputData>
 
-  <inputData id="_id_screening" name="ScreeningOutcome">
-    <variable id="_v_screening" name="ScreeningOutcome" typeRef="string"/>
+  <inputData id="_id_screening" name="screeningOutcome">
+    <variable id="_v_screening" name="screeningOutcome" typeRef="string"/>
   </inputData>
 
-  <inputData id="_id_inFlight" name="InFlightAmendment">
-    <variable id="_v_inFlight" name="InFlightAmendment" typeRef="boolean"/>
+  <inputData id="_id_inFlight" name="inFlightAmendment">
+    <variable id="_v_inFlight" name="inFlightAmendment" typeRef="boolean"/>
   </inputData>
 
-  <inputData id="_id_isJoint" name="AccountIsJoint">
-    <variable id="_v_isJoint" name="AccountIsJoint" typeRef="boolean"/>
+  <inputData id="_id_isJoint" name="accountIsJoint">
+    <variable id="_v_isJoint" name="accountIsJoint" typeRef="boolean"/>
   </inputData>
 
-  <inputData id="_id_riskBand" name="RiskBand">
-    <variable id="_v_riskBand" name="RiskBand" typeRef="string"/>
+  <inputData id="_id_riskBand" name="riskBand">
+    <variable id="_v_riskBand" name="riskBand" typeRef="string"/>
   </inputData>
 
   <decision id="_dec_admissibility" name="Admissibility">
@@ -83,15 +84,15 @@
     <informationRequirement id="_ir_9"><requiredInput href="#_id_riskBand"/></informationRequirement>
 
     <decisionTable id="_dt_adm" hitPolicy="FIRST" outputLabel="Admissibility">
-      <input id="_i_a" label="Requestor is party"><inputExpression id="_ie_a" typeRef="boolean"><text>RequestorIsParty</text></inputExpression></input>
-      <input id="_i_b" label="Mandate permits"><inputExpression id="_ie_b" typeRef="boolean"><text>MandatePermits</text></inputExpression></input>
-      <input id="_i_c" label="Screening"><inputExpression id="_ie_c" typeRef="string"><text>ScreeningOutcome</text></inputExpression></input>
-      <input id="_i_d" label="Account status"><inputExpression id="_ie_d" typeRef="string"><text>AccountStatus</text></inputExpression></input>
-      <input id="_i_e" label="In-flight amendment"><inputExpression id="_ie_e" typeRef="boolean"><text>InFlightAmendment</text></inputExpression></input>
-      <input id="_i_f" label="Type"><inputExpression id="_ie_f" typeRef="string"><text>AmendmentType</text></inputExpression></input>
-      <input id="_i_g" label="Account is joint"><inputExpression id="_ie_g" typeRef="boolean"><text>AccountIsJoint</text></inputExpression></input>
-      <input id="_i_h" label="Channel"><inputExpression id="_ie_h" typeRef="string"><text>Channel</text></inputExpression></input>
-      <input id="_i_i" label="Risk band"><inputExpression id="_ie_i" typeRef="string"><text>RiskBand</text></inputExpression></input>
+      <input id="_i_a" label="Requestor is party"><inputExpression id="_ie_a" typeRef="boolean"><text>requestorIsParty</text></inputExpression></input>
+      <input id="_i_b" label="Mandate permits"><inputExpression id="_ie_b" typeRef="boolean"><text>mandatePermits</text></inputExpression></input>
+      <input id="_i_c" label="Screening"><inputExpression id="_ie_c" typeRef="string"><text>screeningOutcome</text></inputExpression></input>
+      <input id="_i_d" label="Account status"><inputExpression id="_ie_d" typeRef="string"><text>accountStatus</text></inputExpression></input>
+      <input id="_i_e" label="In-flight amendment"><inputExpression id="_ie_e" typeRef="boolean"><text>inFlightAmendment</text></inputExpression></input>
+      <input id="_i_f" label="Type"><inputExpression id="_ie_f" typeRef="string"><text>amendmentType</text></inputExpression></input>
+      <input id="_i_g" label="Account is joint"><inputExpression id="_ie_g" typeRef="boolean"><text>accountIsJoint</text></inputExpression></input>
+      <input id="_i_h" label="Channel"><inputExpression id="_ie_h" typeRef="string"><text>channel</text></inputExpression></input>
+      <input id="_i_i" label="Risk band"><inputExpression id="_ie_i" typeRef="string"><text>riskBand</text></inputExpression></input>
 
       <output id="_o_1" name="admissibility" typeRef="tAdmissibility"/>
       <output id="_o_2" name="reasonCode" typeRef="string"/>
@@ -263,12 +264,27 @@
       </rule>
     </decisionTable>
   </decision>
-
   <dmndi:DMNDI>
-    <dmndi:DMNDiagram id="_diag">
-      <dmndi:DMNShape id="_sh_dec" dmnElementRef="_dec_admissibility">
-        <dc:Bounds x="300" y="60" width="180" height="80"/>
-      </dmndi:DMNShape>
+    <dmndi:DMNDiagram id="diagram_1" name="Decision Requirements">
+      <dmndi:DMNShape id="shape__id_type" dmnElementRef="_id_type"><dc:Bounds x="60" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_accountStatus" dmnElementRef="_id_accountStatus"><dc:Bounds x="250" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_requestorIsParty" dmnElementRef="_id_requestorIsParty"><dc:Bounds x="440" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_mandatePermits" dmnElementRef="_id_mandatePermits"><dc:Bounds x="630" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_channel" dmnElementRef="_id_channel"><dc:Bounds x="820" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_screening" dmnElementRef="_id_screening"><dc:Bounds x="1010" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_inFlight" dmnElementRef="_id_inFlight"><dc:Bounds x="1200" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_isJoint" dmnElementRef="_id_isJoint"><dc:Bounds x="1390" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_riskBand" dmnElementRef="_id_riskBand"><dc:Bounds x="1580" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__dec_admissibility" dmnElementRef="_dec_admissibility"><dc:Bounds x="800" y="240" width="200" height="80"/></dmndi:DMNShape>
+      <dmndi:DMNEdge id="edge__ir_1" dmnElementRef="_ir_1"><di:waypoint x="140" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_2" dmnElementRef="_ir_2"><di:waypoint x="330" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_3" dmnElementRef="_ir_3"><di:waypoint x="520" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_4" dmnElementRef="_ir_4"><di:waypoint x="710" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_5" dmnElementRef="_ir_5"><di:waypoint x="900" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_6" dmnElementRef="_ir_6"><di:waypoint x="1090" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_7" dmnElementRef="_ir_7"><di:waypoint x="1280" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_8" dmnElementRef="_ir_8"><di:waypoint x="1470" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__ir_9" dmnElementRef="_ir_9"><di:waypoint x="1660" y="110"/><di:waypoint x="900" y="240"/></dmndi:DMNEdge>
     </dmndi:DMNDiagram>
   </dmndi:DMNDI>
 </definitions>

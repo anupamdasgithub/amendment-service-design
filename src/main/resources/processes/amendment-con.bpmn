@@ -3,6 +3,8 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   xmlns:drools="http://www.jboss.org/drools"
                    id="_con_defs"
                    targetNamespace="https://bank.com/bpmn/amendments"
                    exporter="Manual" exporterVersion="1.0">
@@ -10,26 +12,48 @@
   <bpmn2:itemDefinition id="_n_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
   <bpmn2:itemDefinition id="_n_itemString" structureRef="String"/>
 
-  <bpmn2:process id="amendment-con" name="Change of Name" isExecutable="true" processType="Public">
+  <bpmn2:error id="_n_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
 
-    <bpmn2:property id="item" itemSubjectRef="_n_itemItem" name="item"/>
-    <bpmn2:property id="requestId" itemSubjectRef="_n_itemString" name="requestId"/>
+
+  <bpmn2:process id="amendment_con" name="Change of Name" isExecutable="true" processType="Public">
+
+    <bpmn2:property id="rescreenOutcome"/>
+    <bpmn2:property id="rescreenClear"/>
+    <bpmn2:property id="accountId"/>
+    <bpmn2:property id="item" itemSubjectRef="_n_itemItem" name="item">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="requestId" itemSubjectRef="_n_itemString" name="requestId">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
 
     <bpmn2:startEvent id="n_start" name="Start"><bpmn2:outgoing>nf1</bpmn2:outgoing></bpmn2:startEvent>
 
-    <bpmn2:businessRuleTask id="n_evidence_rule" name="Determine required evidence"
-                            implementation="http://www.jboss.org/drools/dmn">
+    <!--
+      Determining required evidence per name-change reason is a decision and
+      belongs in DMN. No such model exists yet, so this is a work item task
+      bound to a handler. Replace with a Business Rule Task once the
+      ConEvidenceRequirement DMN model is authored.
+    -->
+    <bpmn2:task id="n_evidence_rule" name="Determine required evidence" drools:taskName="EvidenceRequirementTask">
       <bpmn2:incoming>nf1</bpmn2:incoming><bpmn2:outgoing>nf2</bpmn2:outgoing>
-    </bpmn2:businessRuleTask>
+    </bpmn2:task>
 
-    <bpmn2:userTask id="n_collect" name="Collect and verify name evidence">
+    <bpmn2:userTask id="n_collect" name="Collect and verify name evidence" drools:taskName="CollectAndVerifyNameEvidence">
       <bpmn2:incoming>nf2</bpmn2:incoming><bpmn2:outgoing>nf3</bpmn2:outgoing>
       <bpmn2:potentialOwner id="_n_po">
         <bpmn2:resourceAssignmentExpression id="_n_rae">
           <bpmn2:formalExpression>amendments-ops</bpmn2:formalExpression>
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
-      <bpmn2:boundaryEventRefs>n_collect_timer</bpmn2:boundaryEventRefs>
     </bpmn2:userTask>
 
     <bpmn2:boundaryEvent id="n_collect_timer" name="Evidence SLA" attachedToRef="n_collect" cancelActivity="false">
@@ -39,24 +63,51 @@
       </bpmn2:timerEventDefinition>
     </bpmn2:boundaryEvent>
 
-    <bpmn2:serviceTask id="n_remind" name="Send evidence reminder"
-                       implementation="##WebService" operationRef="_op_notify">
+    <bpmn2:task id="n_remind" name="Send evidence reminder" drools:taskName="EvidenceReminderTask">
       <bpmn2:incoming>nf_timer</bpmn2:incoming><bpmn2:outgoing>nf_remind_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="n_remind_end"><bpmn2:incoming>nf_remind_out</bpmn2:incoming></bpmn2:endEvent>
 
-    <bpmn2:serviceTask id="n_rescreen" name="Re-screen under new name"
-                       implementation="##WebService" operationRef="_op_screening">
+    <bpmn2:task id="n_rescreen" name="Re-screen under new name" drools:taskName="SanctionsScreeningTask">
       <bpmn2:incoming>nf3</bpmn2:incoming><bpmn2:outgoing>nf4</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
+
+    <bpmn2:task id="n_derive" name="Read screening outcome" drools:taskName="ReadItemDetailTask">
+      <bpmn2:incoming>nf4</bpmn2:incoming>
+      <bpmn2:outgoing>nf4b</bpmn2:outgoing>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_n_derive_item" name="item"/>
+        <bpmn2:dataOutput id="_do_n_derive_rescreenOutcome" name="rescreenOutcome"/>
+        <bpmn2:dataOutput id="_do_n_derive_rescreenClear" name="rescreenClear"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_n_derive_item</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_n_derive_rescreenOutcome</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_n_derive_rescreenClear</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_n_derive_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_n_derive_rescreenOutcome</bpmn2:sourceRef>
+        <bpmn2:targetRef>rescreenOutcome</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_n_derive_rescreenClear</bpmn2:sourceRef>
+        <bpmn2:targetRef>rescreenClear</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
 
     <bpmn2:exclusiveGateway id="n_gw_screen" name="Screening clear" gatewayDirection="Diverging">
-      <bpmn2:incoming>nf4</bpmn2:incoming>
+      <bpmn2:incoming>nf4b</bpmn2:incoming>
       <bpmn2:outgoing>nf_clear</bpmn2:outgoing>
       <bpmn2:outgoing>nf_refer</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
 
-    <bpmn2:userTask id="n_refer" name="Financial crime disposition">
+    <bpmn2:userTask id="n_refer" name="Financial crime disposition" drools:taskName="FinancialCrimeDisposition">
       <bpmn2:incoming>nf_refer</bpmn2:incoming><bpmn2:outgoing>nf_refer_out</bpmn2:outgoing>
       <bpmn2:potentialOwner id="_n_po2">
         <bpmn2:resourceAssignmentExpression id="_n_rae2">
@@ -71,7 +122,7 @@
       <bpmn2:outgoing>nf5</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
 
-    <bpmn2:userTask id="n_approve" name="Maker checker approval">
+    <bpmn2:userTask id="n_approve" name="Maker checker approval" drools:taskName="MakerCheckerApproval">
       <bpmn2:incoming>nf5</bpmn2:incoming><bpmn2:outgoing>nf6</bpmn2:outgoing>
       <bpmn2:potentialOwner id="_n_po3">
         <bpmn2:resourceAssignmentExpression id="_n_rae3">
@@ -80,27 +131,56 @@
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
 
-    <bpmn2:serviceTask id="n_apply" name="Apply name in core banking"
-                       implementation="##WebService" operationRef="_op_core_name">
+    <bpmn2:task id="n_apply" name="Apply name in core banking" drools:taskName="CoreBankingTask">
       <bpmn2:incoming>nf6</bpmn2:incoming><bpmn2:outgoing>nf7</bpmn2:outgoing>
-      <bpmn2:boundaryEventRefs>n_apply_error</bpmn2:boundaryEventRefs>
-    </bpmn2:serviceTask>
+    
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_n_apply_item" name="item"/>
+        <bpmn2:dataInput id="_di_n_apply_operation" name="operation"/>
+        <bpmn2:dataInput id="_di_n_apply_accountId" name="accountId"/>
+        <bpmn2:dataInput id="_di_n_apply_idempotencyKey" name="idempotencyKey"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_n_apply_item</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_n_apply_operation</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_n_apply_accountId</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_n_apply_idempotencyKey</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_n_apply_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_n_apply_operation</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[APPLY_NAME]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_n_apply_operation]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_n_apply_accountId</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_n_apply_idempotencyKey</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:task>
 
     <bpmn2:boundaryEvent id="n_apply_error" name="Core failure" attachedToRef="n_apply" cancelActivity="true">
       <bpmn2:outgoing>nf_err</bpmn2:outgoing>
       <bpmn2:errorEventDefinition id="_n_eed" errorRef="_n_err"/>
     </bpmn2:boundaryEvent>
 
-    <bpmn2:serviceTask id="n_fail" name="Record failure and refer"
-                       implementation="##WebService" operationRef="_op_fail">
+    <bpmn2:task id="n_fail" name="Record failure and refer" drools:taskName="FailureRecordingTask">
       <bpmn2:incoming>nf_err</bpmn2:incoming><bpmn2:outgoing>nf_err_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="n_end_failed" name="Failed"><bpmn2:incoming>nf_err_out</bpmn2:incoming></bpmn2:endEvent>
 
-    <bpmn2:serviceTask id="n_reissue" name="Trigger card reissue"
-                       implementation="##WebService" operationRef="_op_card">
+    <bpmn2:task id="n_reissue" name="Trigger card reissue" drools:taskName="CardReissueTask">
       <bpmn2:incoming>nf7</bpmn2:incoming><bpmn2:outgoing>nf8</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
 
     <bpmn2:endEvent id="n_end" name="Applied"><bpmn2:incoming>nf8</bpmn2:incoming></bpmn2:endEvent>
 
@@ -109,12 +189,13 @@
     <bpmn2:sequenceFlow id="nf3" sourceRef="n_collect" targetRef="n_rescreen"/>
     <bpmn2:sequenceFlow id="nf_timer" sourceRef="n_collect_timer" targetRef="n_remind"/>
     <bpmn2:sequenceFlow id="nf_remind_out" sourceRef="n_remind" targetRef="n_remind_end"/>
-    <bpmn2:sequenceFlow id="nf4" sourceRef="n_rescreen" targetRef="n_gw_screen"/>
+    <bpmn2:sequenceFlow id="nf4" sourceRef="n_rescreen" targetRef="n_derive"/>
+    <bpmn2:sequenceFlow id="nf4b" sourceRef="n_derive" targetRef="n_gw_screen"/>
     <bpmn2:sequenceFlow id="nf_clear" sourceRef="n_gw_screen" targetRef="n_gw_join">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.con.rescreenResult.outcome = "CLEAR"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">rescreenClear = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="nf_refer" sourceRef="n_gw_screen" targetRef="n_refer">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.con.rescreenResult.outcome != "CLEAR"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">rescreenClear = false</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="nf_refer_out" sourceRef="n_refer" targetRef="n_gw_join"/>
     <bpmn2:sequenceFlow id="nf5" sourceRef="n_gw_join" targetRef="n_approve"/>
@@ -124,19 +205,40 @@
     <bpmn2:sequenceFlow id="nf_err" sourceRef="n_apply_error" targetRef="n_fail"/>
     <bpmn2:sequenceFlow id="nf_err_out" sourceRef="n_fail" targetRef="n_end_failed"/>
   </bpmn2:process>
-
-  <bpmn2:error id="_n_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
-
-  <bpmndi:BPMNDiagram id="_n_diag">
-    <bpmndi:BPMNPlane id="_n_plane" bpmnElement="amendment-con">
-      <bpmndi:BPMNShape id="_ns_start" bpmnElement="n_start"><dc:Bounds x="60" y="120" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_rule" bpmnElement="n_evidence_rule"><dc:Bounds x="140" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_collect" bpmnElement="n_collect"><dc:Bounds x="300" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_res" bpmnElement="n_rescreen"><dc:Bounds x="460" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_gw" bpmnElement="n_gw_screen"><dc:Bounds x="620" y="118" width="40" height="40"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_approve" bpmnElement="n_approve"><dc:Bounds x="780" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_apply" bpmnElement="n_apply"><dc:Bounds x="940" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_ns_end" bpmnElement="n_end"><dc:Bounds x="1260" y="120" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNDiagram id="diag_amendment_con">
+    <bpmndi:BPMNPlane id="plane_amendment_con" bpmnElement="amendment_con">
+      <bpmndi:BPMNShape id="shape_n_fail" bpmnElement="n_fail"><dc:Bounds x="60" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_remind" bpmnElement="n_remind"><dc:Bounds x="60" y="205" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_start" bpmnElement="n_start"><dc:Bounds x="60" y="330" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_end_failed" bpmnElement="n_end_failed"><dc:Bounds x="270" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_evidence_rule" bpmnElement="n_evidence_rule"><dc:Bounds x="270" y="161" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_remind_end" bpmnElement="n_remind_end"><dc:Bounds x="270" y="286" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_collect" bpmnElement="n_collect"><dc:Bounds x="480" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_rescreen" bpmnElement="n_rescreen"><dc:Bounds x="690" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_gw_screen" bpmnElement="n_gw_screen"><dc:Bounds x="900" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_refer" bpmnElement="n_refer"><dc:Bounds x="1020" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_gw_join" bpmnElement="n_gw_join"><dc:Bounds x="1230" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_approve" bpmnElement="n_approve"><dc:Bounds x="1350" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_apply" bpmnElement="n_apply"><dc:Bounds x="1560" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_reissue" bpmnElement="n_reissue"><dc:Bounds x="1770" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_end" bpmnElement="n_end"><dc:Bounds x="1980" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_collect_timer" bpmnElement="n_collect_timer"><dc:Bounds x="602" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_n_apply_error" bpmnElement="n_apply_error"><dc:Bounds x="1682" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_nf1" bpmnElement="nf1"><di:waypoint x="96" y="348"/><di:waypoint x="270" y="201"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf2" bpmnElement="nf2"><di:waypoint x="410" y="201"/><di:waypoint x="480" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf3" bpmnElement="nf3"><di:waypoint x="620" y="120"/><di:waypoint x="690" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_timer" bpmnElement="nf_timer"><di:waypoint x="638" y="160"/><di:waypoint x="60" y="245"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_remind_out" bpmnElement="nf_remind_out"><di:waypoint x="200" y="245"/><di:waypoint x="270" y="304"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf4" bpmnElement="nf4"><di:waypoint x="830" y="120"/><di:waypoint x="900" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_clear" bpmnElement="nf_clear"><di:waypoint x="950" y="105"/><di:waypoint x="1230" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_refer" bpmnElement="nf_refer"><di:waypoint x="950" y="105"/><di:waypoint x="1020" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_refer_out" bpmnElement="nf_refer_out"><di:waypoint x="1160" y="120"/><di:waypoint x="1230" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf5" bpmnElement="nf5"><di:waypoint x="1280" y="105"/><di:waypoint x="1350" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf6" bpmnElement="nf6"><di:waypoint x="1490" y="120"/><di:waypoint x="1560" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf7" bpmnElement="nf7"><di:waypoint x="1700" y="120"/><di:waypoint x="1770" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf8" bpmnElement="nf8"><di:waypoint x="1910" y="120"/><di:waypoint x="1980" y="98"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_err" bpmnElement="nf_err"><di:waypoint x="1718" y="160"/><di:waypoint x="60" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_nf_err_out" bpmnElement="nf_err_out"><di:waypoint x="200" y="120"/><di:waypoint x="270" y="98"/></bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>

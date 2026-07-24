@@ -1,9 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <groupId>com.bank</groupId>
   <artifactId>amendments-service</artifactId>
   <version>1.0.0-SNAPSHOT</version>
@@ -14,258 +11,360 @@
     IMPORTANT — BAMOE artifacts are NOT on Maven Central.
 
     IBM distributes them through a BAMOE Maven repository that you host
-    locally (downloaded from IBM Fix Central). Building this project requires
-    that repository to be configured and reachable, either in ~/.m2/settings.xml
-    or via the <repositories> block below.
-
-    This is why the GitHub Actions workflow validates the BPMN/DMN models but
-    does not attempt `mvn compile` — a public runner has no route to the IBM
-    repository. Java compilation and the DMN unit tests run locally.
-
-    See README.md "Building" for setup.
+    yourself (licensed distribution). The default `bamoe` profile targets
+    those coordinates. Use -Pcommunity -P!bamoe to build against upstream
+    Kogito from Maven Central instead. See README "Building".
   -->
 
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <!--
-      Pin to the BAMOE release licensed for the programme.
-      Version strings carry an IBM build suffix, e.g. 9.4.2-ibm-0002.
-      Confirm the exact string for your release before building.
-    -->
     <bamoe.version>9.4.2-ibm-0002</bamoe.version>
     <spring-boot.version>3.3.4</spring-boot.version>
-
-    <!-- Override with -Dbamoe.repo.url=<your repo> or in settings.xml -->
+    <!-- Override with -Dbamoe.repo.url=<url> or in ~/.m2/settings.xml -->
     <bamoe.repo.url>http://localhost:8080/</bamoe.repo.url>
+    <!--
+      Community Kogito version for the -Pcommunity profile. Confirm the
+      latest release with:
+        curl -s https://repo1.maven.org/maven2/org/kie/kogito/\
+          kogito-processes-spring-boot-starter/maven-metadata.xml | grep release
+    -->
+    <kogito.community.version>1.44.1.Final</kogito.community.version>
   </properties>
+  <!--
+    Two build profiles.
 
-  <repositories>
-    <!--
-      Point this at your BAMOE Maven repository. The default below matches
-      IBM's documented local repository; override with -Dbamoe.repo.url or
-      replace with your organisation's internal Nexus/Artifactory mirror.
-    -->
-    <repository>
-      <id>ibm-bamoe-enterprise-maven-repository</id>
-      <name>IBM BAMOE Enterprise Maven Repository</name>
-      <url>${bamoe.repo.url}</url>
-      <releases><enabled>true</enabled></releases>
-      <snapshots><enabled>false</enabled></snapshots>
-    </repository>
-  </repositories>
+    bamoe (default) — the design of record. Uses IBM BAMOE artifacts, which
+    are not published to Maven Central and require the BAMOE Maven repository
+    (a licensed IBM distribution). This is what the programme targets.
 
-  <dependencyManagement>
-    <dependencies>
-      <!-- Order matters: BAMOE BOM is imported before the Spring Boot BOM. -->
-      <dependency>
-        <groupId>com.ibm.bamoe</groupId>
-        <artifactId>bamoe-bom</artifactId>
-        <version>${bamoe.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring-boot.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+        mvn -Dbamoe.repo.url=http://localhost:8080/ compile
 
-  <dependencies>
-    <!-- Mandatory pair for a workflow Business Service on Spring Boot -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jbpm</groupId>
-      <artifactId>jbpm-with-drools-spring-boot-starter</artifactId>
-    </dependency>
+    community — the same underlying engine from the upstream Kogito project,
+    published to Maven Central. Builds with no IBM entitlement, so the BPMN,
+    DMN and Java wiring can be verified locally. The artifact coordinates
+    differ from BAMOE, so this profile is for local verification only and is
+    not a deployment target.
 
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-validation</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-    </dependency>
-
-    <!-- Stateful workflow persistence: instance state at wait states -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-addons-springboot-persistence-jdbc</artifactId>
-    </dependency>
-
-    <!-- Jobs Service: timers, SLA escalation, consent expiry -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kogito-addons-springboot-embedded-jobs-jpa</artifactId>
-    </dependency>
-
-    <!-- User Tasks storage -->
-    <dependency>
-      <groupId>org.jbpm</groupId>
-      <artifactId>jbpm-addons-springboot-usertask-storage-jpa</artifactId>
-    </dependency>
-
-    <!-- Data-Index: queryable view backing the ops work queue -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kogito-addons-springboot-data-index-jpa</artifactId>
-    </dependency>
-
-    <!-- Data-Audit: regulatory audit trail -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kogito-addons-springboot-data-audit-jpa</artifactId>
-    </dependency>
-
-    <!-- Process lifecycle events -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-addons-springboot-events-process</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-addons-springboot-messaging</artifactId>
-    </dependency>
-
-    <!-- Process management REST operations -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-addons-springboot-process-management</artifactId>
-    </dependency>
-
-    <!-- Supported REST work item handler for service task integration -->
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-rest-workitem</artifactId>
-    </dependency>
-
-    <!--
-      AI task handlers. Not used by the current processes; retained because
-      assisted amendment triage is on the roadmap. Remove if not required.
-    -->
-    <!--
-    <dependency>
-      <groupId>com.ibm.bamoe</groupId>
-      <artifactId>bamoe-gen-ai-task-work-item-handler-spring-boot</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.bamoe</groupId>
-      <artifactId>bamoe-ai-agent-task-work-item-handler-spring-boot</artifactId>
-    </dependency>
-    -->
-
-    <!-- Monitoring -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-addons-springboot-monitoring-prometheus</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
-    </dependency>
-
-    <!-- Dev and ops: process diagrams, source files, web console -->
-    <dependency>
-      <groupId>org.kie</groupId>
-      <artifactId>kie-addons-springboot-process-svg</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.bamoe</groupId>
-      <artifactId>bamoe-spring-boot-web-console</artifactId>
-    </dependency>
-
-    <!-- ILMT licence compliance tracking (PAMOE: workflow use case) -->
-    <dependency>
-      <groupId>com.ibm.bamoe</groupId>
-      <artifactId>bamoe-ilmt-compliance-spring-boot-pamoe</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-database-postgresql</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <!-- Test Scenarios (.scesim) support for DMN and BPMN -->
-    <dependency>
-      <groupId>org.kie.kogito</groupId>
-      <artifactId>kogito-scenario-simulation</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring-boot.version}</version>
-        <executions>
-          <execution><goals><goal>repackage</goal></goals></execution>
-        </executions>
-      </plugin>
-
-      <!-- Compiles BPMN and DMN into generated Java at build time -->
-      <plugin>
-        <groupId>org.kie.kogito</groupId>
-        <artifactId>kogito-maven-plugin</artifactId>
-        <version>${bamoe.version}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <goals>
-              <goal>process-model-files</goal>
-              <goal>generateModel</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
-      </plugin>
-    </plugins>
-  </build>
+        mvn -Pcommunity -P!bamoe compile
+  -->
+  <profiles>
+    <profile>
+      <id>bamoe</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>ibm-bamoe-enterprise-maven-repository</id>
+          <name>IBM BAMOE Enterprise Maven Repository</name>
+          <url>${bamoe.repo.url}</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>ibm-bamoe-enterprise-maven-repository</id>
+          <name>IBM BAMOE Enterprise Maven Repository</name>
+          <url>${bamoe.repo.url}</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>com.ibm.bamoe</groupId>
+            <artifactId>bamoe-bom</artifactId>
+            <version>${bamoe.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${spring-boot.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jbpm</groupId>
+          <artifactId>jbpm-with-drools-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kie-addons-springboot-persistence-jdbc</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kogito-addons-springboot-embedded-jobs-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jbpm</groupId>
+          <artifactId>jbpm-addons-springboot-usertask-storage-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kogito-addons-springboot-data-index-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kogito-addons-springboot-data-audit-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kie-addons-springboot-events-process</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-addons-springboot-messaging</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kie-addons-springboot-process-management</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-rest-workitem</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kie-addons-springboot-monitoring-prometheus</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>io.micrometer</groupId>
+          <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie</groupId>
+          <artifactId>kie-addons-springboot-process-svg</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.ibm.bamoe</groupId>
+          <artifactId>bamoe-spring-boot-web-console</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>com.ibm.bamoe</groupId>
+          <artifactId>bamoe-ilmt-compliance-spring-boot-pamoe</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-test</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-scenario-simulation</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.testcontainers</groupId>
+          <artifactId>postgresql</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.testcontainers</groupId>
+          <artifactId>junit-jupiter</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>${spring-boot.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>repackage</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.kie.kogito</groupId>
+            <artifactId>kogito-maven-plugin</artifactId>
+            <version>${bamoe.version}</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>process-model-files</goal>
+                  <goal>generateModel</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>community</id>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${spring-boot.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+      <dependencies>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-processes-spring-boot-starter</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-decisions-spring-boot-starter</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-rules-spring-boot-starter</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <!-- Kogito 1.x generates javax.annotation imports; Spring Boot 3 uses jakarta -->
+        <dependency>
+          <groupId>javax.annotation</groupId>
+          <artifactId>javax.annotation-api</artifactId>
+          <version>1.3.2</version>
+        </dependency>
+        <!-- Required for generated message consumer classes to compile -->
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-addons-springboot-messaging</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <!-- User task and instance management endpoints -->
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-addons-springboot-task-management</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-addons-springboot-process-management</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.flywaydb</groupId>
+          <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-test</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>${spring-boot.version}</version>
+          </plugin>
+          <plugin>
+            <groupId>org.kie.kogito</groupId>
+            <artifactId>kogito-maven-plugin</artifactId>
+            <version>${kogito.community.version}</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <goals>
+                  <!-- 1.x goal name; the 9.x BAMOE plugin calls this process-model-files -->
+                  <goal>process-model-classes</goal>
+                  <goal>generateModel</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

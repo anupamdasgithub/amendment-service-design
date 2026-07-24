@@ -2,6 +2,7 @@
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
              xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
              xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/"
              id="_jts_eligibility"
              name="JointToSoleEligibility"
              namespace="https://bank.com/dmn/amendments"
@@ -182,12 +183,23 @@
       </rule>
     </decisionTable>
   </decision>
-
   <dmndi:DMNDI>
-    <dmndi:DMNDiagram id="_jdiag">
-      <dmndi:DMNShape id="_jsh" dmnElementRef="_jdec">
-        <dc:Bounds x="300" y="60" width="180" height="80"/>
-      </dmndi:DMNShape>
+    <dmndi:DMNDiagram id="diagram_1" name="Decision Requirements">
+      <dmndi:DMNShape id="shape__jid_deceased" dmnElementRef="_jid_deceased"><dc:Bounds x="60" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jid_incap" dmnElementRef="_jid_incap"><dc:Bounds x="250" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jid_consent" dmnElementRef="_jid_consent"><dc:Bounds x="440" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jid_liab" dmnElementRef="_jid_liab"><dc:Bounds x="630" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jid_od" dmnElementRef="_jid_od"><dc:Bounds x="820" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jid_linked" dmnElementRef="_jid_linked"><dc:Bounds x="1010" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jid_elig" dmnElementRef="_jid_elig"><dc:Bounds x="1200" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__jdec" dmnElementRef="_jdec"><dc:Bounds x="610" y="240" width="200" height="80"/></dmndi:DMNShape>
+      <dmndi:DMNEdge id="edge__jr_1" dmnElementRef="_jr_1"><di:waypoint x="140" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__jr_2" dmnElementRef="_jr_2"><di:waypoint x="330" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__jr_3" dmnElementRef="_jr_3"><di:waypoint x="520" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__jr_4" dmnElementRef="_jr_4"><di:waypoint x="710" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__jr_5" dmnElementRef="_jr_5"><di:waypoint x="900" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__jr_6" dmnElementRef="_jr_6"><di:waypoint x="1090" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__jr_7" dmnElementRef="_jr_7"><di:waypoint x="1280" y="110"/><di:waypoint x="710" y="240"/></dmndi:DMNEdge>
     </dmndi:DMNDiagram>
   </dmndi:DMNDI>
 </definitions>

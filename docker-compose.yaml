@@ -1,11 +1,16 @@
 # Local development stack.
 #
-# Brings up the dependencies the service needs so the inner loop stays on
-# this machine. Start these, then run the service with:
+#   docker compose up -d
+#   mvn -Pcommunity -P'!bamoe' spring-boot:run -Dspring-boot.run.profiles=dev
 #
-#   mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# Once an instance has been created:
 #
-# Testing a rule change requires neither a commit nor the pipeline.
+#   Management Console   http://localhost:8280
+#   Data Index GraphQL   http://localhost:8180/graphql
+#
+# The service emits process events to Kafka, Data Index consumes them into its
+# own schema, and the Management Console reads Data Index over GraphQL. This is
+# the community equivalent of the data-index addon bundled in the BAMOE profile.
 
 services:
   postgres:
@@ -18,6 +23,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./deploy/init-data-index-db.sql:/docker-entrypoint-initdb.d/init-data-index-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U dev -d amendments_dev"]
       interval: 5s
@@ -25,18 +31,55 @@ services:
       retries: 10
 
   kafka:
-    image: bitnami/kafka:3.7
+    image: apache/kafka:3.9.0
     environment:
-      KAFKA_CFG_NODE_ID: 0
-      KAFKA_CFG_PROCESS_ROLES: controller,broker
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
-      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://:9092,PLAINTEXT_HOST://:29092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     ports:
-      - "9092:9092"
+      - "9092:29092"
 
+  # Indexes process instance events emitted by the service.
+  data-index:
+    image: quay.io/kiegroup/kogito-data-index-postgresql:1.44.1
+    ports:
+      - "8180:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: "jdbc:postgresql://postgres:5432/dataindex"
+      QUARKUS_DATASOURCE_USERNAME: dev
+      QUARKUS_DATASOURCE_PASSWORD: dev
+      QUARKUS_HTTP_CORS: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: "/.*/"
+      # Consume events from Kafka rather than over HTTP
+      KOGITO_DATA_INDEX_QUARKUS_PROFILE: kafka-events-support
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      # Data Index does not create its own schema
+      QUARKUS_FLYWAY_MIGRATE_AT_START: "true"
+      QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: update
+
+  # Browser UI over Data Index. The /graphql suffix is required.
+  management-console:
+    image: quay.io/kiegroup/kogito-management-console:1.44.1
+    ports:
+      - "8280:8080"
+    depends_on:
+      - data-index
+    environment:
+      KOGITO_DATAINDEX_HTTP_URL: http://localhost:8180/graphql
+
+  # Only started with: docker compose --profile auth up -d
   keycloak:
     image: quay.io/keycloak/keycloak:25.0
     command: start-dev
@@ -44,7 +87,8 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
-      - "8180:8080"
+      - "8480:8080"
+    profiles: ["auth"]
 
 volumes:
   pgdata:

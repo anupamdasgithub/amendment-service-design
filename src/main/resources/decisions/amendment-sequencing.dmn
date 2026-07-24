@@ -2,6 +2,7 @@
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/"
              xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/"
              xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/"
+             xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/"
              id="_amendment_sequencing"
              name="AmendmentSequencing"
              namespace="https://bank.com/dmn/amendments"
@@ -10,9 +11,9 @@
 
   <itemDefinition id="_it_Mode" name="tExecutionMode" isCollection="false">
     <typeRef>string</typeRef>
-    <typeConstraint id="_tc_mode">
+    <allowedValues id="_tc_mode">
       <text>"PARALLEL","SEQUENTIAL"</text>
-    </typeConstraint>
+    </allowedValues>
   </itemDefinition>
 
   <itemDefinition id="_it_Plan" name="tExecutionPlan" isCollection="false">
@@ -21,33 +22,26 @@
     </itemComponent>
     <itemComponent id="_ic_p2" name="orderedSequence">
       <typeRef>string</typeRef>
-      <itemComponent id="_ic_p2a" name="item">
-        <typeRef>string</typeRef>
-      </itemComponent>
     </itemComponent>
     <itemComponent id="_ic_p3" name="rationale">
       <typeRef>string</typeRef>
     </itemComponent>
   </itemDefinition>
 
-  <inputData id="_id_permitted" name="PermittedTypes">
-    <variable id="_v_permitted" name="PermittedTypes" typeRef="string" isCollection="true"/>
+  <inputData id="_id_count" name="permittedCount">
+    <variable id="_v_count" name="permittedCount" typeRef="number"/>
   </inputData>
 
-  <inputData id="_id_count" name="PermittedCount">
-    <variable id="_v_count" name="PermittedCount" typeRef="number"/>
+  <inputData id="_id_hasJts" name="includesJointToSole">
+    <variable id="_v_hasJts" name="includesJointToSole" typeRef="boolean"/>
   </inputData>
 
-  <inputData id="_id_hasJts" name="IncludesJointToSole">
-    <variable id="_v_hasJts" name="IncludesJointToSole" typeRef="boolean"/>
+  <inputData id="_id_hasCon" name="includesCon">
+    <variable id="_v_hasCon" name="includesCon" typeRef="boolean"/>
   </inputData>
 
-  <inputData id="_id_hasCon" name="IncludesCon">
-    <variable id="_v_hasCon" name="IncludesCon" typeRef="boolean"/>
-  </inputData>
-
-  <inputData id="_id_hasCoa" name="IncludesCoa">
-    <variable id="_v_hasCoa" name="IncludesCoa" typeRef="boolean"/>
+  <inputData id="_id_hasCoa" name="includesCoa">
+    <variable id="_v_hasCoa" name="includesCoa" typeRef="boolean"/>
   </inputData>
 
   <decision id="_dec_sequencing" name="ExecutionPlan">
@@ -58,10 +52,10 @@
     <informationRequirement id="_sr_4"><requiredInput href="#_id_hasCoa"/></informationRequirement>
 
     <decisionTable id="_dt_seq" hitPolicy="FIRST" outputLabel="ExecutionPlan">
-      <input id="_si_a" label="Permitted count"><inputExpression id="_sie_a" typeRef="number"><text>PermittedCount</text></inputExpression></input>
-      <input id="_si_b" label="Includes joint to sole"><inputExpression id="_sie_b" typeRef="boolean"><text>IncludesJointToSole</text></inputExpression></input>
-      <input id="_si_c" label="Includes CoN"><inputExpression id="_sie_c" typeRef="boolean"><text>IncludesCon</text></inputExpression></input>
-      <input id="_si_d" label="Includes CoA"><inputExpression id="_sie_d" typeRef="boolean"><text>IncludesCoa</text></inputExpression></input>
+      <input id="_si_a" label="Permitted count"><inputExpression id="_sie_a" typeRef="number"><text>permittedCount</text></inputExpression></input>
+      <input id="_si_b" label="Includes joint to sole"><inputExpression id="_sie_b" typeRef="boolean"><text>includesJointToSole</text></inputExpression></input>
+      <input id="_si_c" label="Includes CoN"><inputExpression id="_sie_c" typeRef="boolean"><text>includesCon</text></inputExpression></input>
+      <input id="_si_d" label="Includes CoA"><inputExpression id="_sie_d" typeRef="boolean"><text>includesCoa</text></inputExpression></input>
 
       <output id="_so_1" name="mode" typeRef="tExecutionMode"/>
       <output id="_so_2" name="orderedSequence" typeRef="string"/>
@@ -128,12 +122,17 @@
       </rule>
     </decisionTable>
   </decision>
-
   <dmndi:DMNDI>
-    <dmndi:DMNDiagram id="_sdiag">
-      <dmndi:DMNShape id="_ssh_dec" dmnElementRef="_dec_sequencing">
-        <dc:Bounds x="300" y="60" width="180" height="80"/>
-      </dmndi:DMNShape>
+    <dmndi:DMNDiagram id="diagram_1" name="Decision Requirements">
+      <dmndi:DMNShape id="shape__id_count" dmnElementRef="_id_count"><dc:Bounds x="250" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_hasJts" dmnElementRef="_id_hasJts"><dc:Bounds x="440" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_hasCon" dmnElementRef="_id_hasCon"><dc:Bounds x="630" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__id_hasCoa" dmnElementRef="_id_hasCoa"><dc:Bounds x="820" y="60" width="160" height="50"/></dmndi:DMNShape>
+      <dmndi:DMNShape id="shape__dec_sequencing" dmnElementRef="_dec_sequencing"><dc:Bounds x="420" y="240" width="200" height="80"/></dmndi:DMNShape>
+      <dmndi:DMNEdge id="edge__sr_1" dmnElementRef="_sr_1"><di:waypoint x="330" y="110"/><di:waypoint x="520" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__sr_2" dmnElementRef="_sr_2"><di:waypoint x="520" y="110"/><di:waypoint x="520" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__sr_3" dmnElementRef="_sr_3"><di:waypoint x="710" y="110"/><di:waypoint x="520" y="240"/></dmndi:DMNEdge>
+      <dmndi:DMNEdge id="edge__sr_4" dmnElementRef="_sr_4"><di:waypoint x="900" y="110"/><di:waypoint x="520" y="240"/></dmndi:DMNEdge>
     </dmndi:DMNDiagram>
   </dmndi:DMNDI>
 </definitions>

@@ -60,27 +60,53 @@ and what the regulator asks about.
 
 ## Building
 
-**BAMOE artifacts are not on Maven Central.** IBM distributes them through a
-BAMOE Maven repository that you host locally, downloaded from IBM Fix Central.
-Building this project requires that repository to be configured and reachable.
+The project has two Maven profiles.
 
-Point the build at it either by property:
+### bamoe (default) — the design of record
+
+Uses IBM BAMOE artifacts. **These are not on Maven Central.** IBM distributes
+them through a BAMOE Maven repository you host yourself, as a `.zip` or a
+container image, obtained through IBM Passport Advantage or Fix Central. This
+is a licensed IBM distribution and requires entitlement.
 
 ```bash
 mvn -Dbamoe.repo.url=http://localhost:8080/ compile
 ```
 
-or by adding the repository to `~/.m2/settings.xml`, or by mirroring the
-BAMOE artifacts into your organisation's Nexus/Artifactory.
+Or configure the repository in `~/.m2/settings.xml` under the profile id
+`ibm-bamoe-enterprise-maven-repository`. Set `bamoe.version` to the release you
+are licensed for — version strings carry an IBM build suffix such as
+`9.4.2-ibm-0002`, so the bare `9.4.2` will not resolve.
 
-Set `bamoe.version` in `pom.xml` to the release you are licensed for. Version
-strings carry an IBM build suffix — for example `9.4.2-ibm-0002` — so the bare
-`9.4.2` will not resolve.
+### community — local verification
 
-This is also why CI does not run `mvn compile`: a public GitHub Actions runner
-has no route to the IBM repository. CI validates the BPMN and DMN models and
-applies the SQL migrations against a real Postgres, both of which need no IBM
-artifacts. The Java build and the DMN unit tests run locally.
+Builds against the upstream Kogito project on Maven Central: the same
+underlying engine, no IBM entitlement needed. Use it to verify that the BPMN,
+DMN and Java wiring compile.
+
+```bash
+mvn -Pcommunity -P'!bamoe' compile
+mvn -Pcommunity -P'!bamoe' test
+```
+
+Confirm the current Kogito release and set `kogito.community.version`:
+
+```bash
+curl -s https://repo1.maven.org/maven2/org/kie/kogito/\
+kogito-processes-spring-boot-starter/maven-metadata.xml | grep release
+```
+
+The artifact coordinates differ from BAMOE, so this profile is for local
+verification only — it is not a deployment target, and the BAMOE profile
+remains the design of record.
+
+### CI
+
+CI runs neither profile. A public GitHub Actions runner has no route to the
+IBM repository, and building against community artifacts would verify
+coordinates the programme does not use. CI validates the BPMN and DMN models
+and applies the SQL migrations against a real Postgres, all of which need no
+engine artifacts at all.
 
 ## Local development
 

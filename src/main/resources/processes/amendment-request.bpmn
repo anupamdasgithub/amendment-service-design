@@ -13,37 +13,276 @@
   <bpmn2:itemDefinition id="_itemRequest" structureRef="com.bank.amendments.model.AmendmentRequest"/>
   <bpmn2:itemDefinition id="_itemString" structureRef="String"/>
   <bpmn2:itemDefinition id="_itemBoolean" structureRef="Boolean"/>
+  <bpmn2:itemDefinition id="_itemInt" structureRef="Integer"/>
   <bpmn2:itemDefinition id="_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
 
   <bpmn2:message id="_msg_document" name="ExtraDocumentSubmitted" itemRef="_itemString"/>
   <bpmn2:message id="_msg_verification" name="AdditionalVerificationRequired" itemRef="_itemString"/>
   <bpmn2:message id="_msg_cancel" name="AmendmentCancelled" itemRef="_itemString"/>
+  <bpmn2:signal id="_sig_sla" name="SlaBreached"/>
 
-  <bpmn2:process id="amendment-request"
+  <bpmn2:process id="amendment_request"
                  name="Amendment Request"
                  isExecutable="true"
                  processType="Public">
 
-    <bpmn2:property id="request" itemSubjectRef="_itemRequest" name="request"/>
-    <bpmn2:property id="requestId" itemSubjectRef="_itemString" name="requestId"/>
+    <bpmn2:property id="request" itemSubjectRef="_itemRequest" name="request">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="accountId" itemSubjectRef="_itemString" name="accountId"/>
+    <bpmn2:property id="requestId" itemSubjectRef="_itemString" name="requestId">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
     <bpmn2:property id="cancelled" itemSubjectRef="_itemBoolean" name="cancelled"/>
+    <bpmn2:property id="amendmentType" itemSubjectRef="_itemString" name="amendmentType">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="accountStatus" itemSubjectRef="_itemString" name="accountStatus">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="requestorIsParty" itemSubjectRef="_itemBoolean" name="requestorIsParty">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="mandatePermits" itemSubjectRef="_itemBoolean" name="mandatePermits">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="channel" itemSubjectRef="_itemString" name="channel">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="screeningOutcome" itemSubjectRef="_itemString" name="screeningOutcome">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="inFlightAmendment" itemSubjectRef="_itemBoolean" name="inFlightAmendment">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="accountIsJoint" itemSubjectRef="_itemBoolean" name="accountIsJoint">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="addressVerified" name="addressVerified"/>
+    <bpmn2:property id="rescreenOutcome" name="rescreenOutcome"/>
+    <bpmn2:property id="allConsentsGranted" name="allConsentsGranted"/>
+    <bpmn2:property id="nameChangeReason" name="nameChangeReason"/>
+    <bpmn2:property id="otherPartyStatus" name="otherPartyStatus"/>
+    <bpmn2:property id="jointLiabilities" name="jointLiabilities"/>
+    <bpmn2:property id="remainingPartyEligible" name="remainingPartyEligible"/>
+    <bpmn2:property id="riskBand" itemSubjectRef="_itemString" name="riskBand">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="admissibility" name="admissibility">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[output]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="amendmentItems" name="amendmentItems"/>
+    <bpmn2:property id="itemType" itemSubjectRef="_itemString" name="itemType"/>
+    <bpmn2:property id="isCoa" itemSubjectRef="_itemBoolean" name="isCoa"/>
+    <bpmn2:property id="isCon" itemSubjectRef="_itemBoolean" name="isCon"/>
+    <bpmn2:property id="isJointToSole" itemSubjectRef="_itemBoolean" name="isJointToSole"/>
+    <bpmn2:property id="anyPermitted" itemSubjectRef="_itemBoolean" name="anyPermitted"/>
+    <bpmn2:property id="permittedCount" itemSubjectRef="_itemInt" name="permittedCount">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="includesJointToSole" itemSubjectRef="_itemBoolean" name="includesJointToSole">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="includesCon" itemSubjectRef="_itemBoolean" name="includesCon">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="includesCoa" itemSubjectRef="_itemBoolean" name="includesCoa">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="ExecutionPlan" name="ExecutionPlan">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[output]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
 
     <bpmn2:startEvent id="start" name="Request submitted">
       <bpmn2:outgoing>f1</bpmn2:outgoing>
     </bpmn2:startEvent>
 
-    <bpmn2:serviceTask id="task_intake"
-                       name="Load account and verify identity"
-                       implementation="##WebService"
-                       operationRef="_op_intake">
+    <bpmn2:task id="task_intake"
+                       name="Load account and verify identity" drools:taskName="AccountIntakeTask">
+            <bpmn2:ioSpecification>
+                <bpmn2:dataInput id="_di_intake" itemSubjectRef="_itemRequest" name="request"/>
+        <bpmn2:dataInput id="_di_intake_requestId" name="requestId"/>
+        <bpmn2:dataInput id="_di_intake_amendmentType" name="amendmentType"/>
+        <bpmn2:dataInput id="_di_intake_accountStatus" name="accountStatus"/>
+        <bpmn2:dataInput id="_di_intake_requestorIsParty" name="requestorIsParty"/>
+        <bpmn2:dataInput id="_di_intake_mandatePermits" name="mandatePermits"/>
+        <bpmn2:dataInput id="_di_intake_channel" name="channel"/>
+        <bpmn2:dataInput id="_di_intake_screeningOutcome" name="screeningOutcome"/>
+        <bpmn2:dataInput id="_di_intake_inFlightAmendment" name="inFlightAmendment"/>
+        <bpmn2:dataInput id="_di_intake_accountIsJoint" name="accountIsJoint"/>
+        <bpmn2:dataInput id="_di_intake_riskBand" name="riskBand"/>
+        <bpmn2:dataInput id="_di_intake_addressVerified" name="addressVerified"/>
+        <bpmn2:dataInput id="_di_intake_rescreenOutcome" name="rescreenOutcome"/>
+        <bpmn2:dataInput id="_di_intake_allConsentsGranted" name="allConsentsGranted"/>
+        <bpmn2:dataInput id="_di_intake_nameChangeReason" name="nameChangeReason"/>
+        <bpmn2:dataInput id="_di_intake_otherPartyStatus" name="otherPartyStatus"/>
+        <bpmn2:dataInput id="_di_intake_jointLiabilities" name="jointLiabilities"/>
+        <bpmn2:dataInput id="_di_intake_remainingPartyEligible" name="remainingPartyEligible"/>
+        <bpmn2:dataOutput id="_do_intake" itemSubjectRef="_itemRequest" name="request"/>
+        <bpmn2:dataOutput id="_do_intake_accountId" name="accountId"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_intake</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_requestId</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_amendmentType</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_accountStatus</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_requestorIsParty</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_mandatePermits</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_channel</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_screeningOutcome</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_inFlightAmendment</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_accountIsJoint</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_riskBand</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_addressVerified</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_rescreenOutcome</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_allConsentsGranted</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_nameChangeReason</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_otherPartyStatus</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_jointLiabilities</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_intake_remainingPartyEligible</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_intake</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_intake_accountId</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
       <bpmn2:incoming>f1</bpmn2:incoming>
       <bpmn2:outgoing>f2</bpmn2:outgoing>
-      <bpmn2:ioSpecification id="_ios_intake">
-        <bpmn2:dataInput id="_di_intake" itemSubjectRef="_itemRequest" name="request"/>
-        <bpmn2:dataOutput id="_do_intake" itemSubjectRef="_itemRequest" name="request"/>
-        <bpmn2:inputSet id="_is_intake"><bpmn2:dataInputRefs>_di_intake</bpmn2:dataInputRefs></bpmn2:inputSet>
-        <bpmn2:outputSet id="_os_intake"><bpmn2:dataOutputRefs>_do_intake</bpmn2:dataOutputRefs></bpmn2:outputSet>
-      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_requestId</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>amendmentType</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_amendmentType</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountStatus</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_accountStatus</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>requestorIsParty</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_requestorIsParty</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>mandatePermits</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_mandatePermits</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>channel</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_channel</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>screeningOutcome</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_screeningOutcome</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>inFlightAmendment</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_inFlightAmendment</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountIsJoint</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_accountIsJoint</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>riskBand</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_riskBand</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>addressVerified</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_addressVerified</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>rescreenOutcome</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_rescreenOutcome</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>allConsentsGranted</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_allConsentsGranted</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>nameChangeReason</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_nameChangeReason</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>otherPartyStatus</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_otherPartyStatus</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>jointLiabilities</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_jointLiabilities</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>remainingPartyEligible</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_intake_remainingPartyEligible</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
       <bpmn2:dataInputAssociation id="_dia_intake">
         <bpmn2:sourceRef>request</bpmn2:sourceRef>
         <bpmn2:targetRef>_di_intake</bpmn2:targetRef>
@@ -52,20 +291,27 @@
         <bpmn2:sourceRef>_do_intake</bpmn2:sourceRef>
         <bpmn2:targetRef>request</bpmn2:targetRef>
       </bpmn2:dataOutputAssociation>
-    </bpmn2:serviceTask>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_intake_accountId</bpmn2:sourceRef>
+        <bpmn2:targetRef>accountId</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
 
-    <bpmn2:serviceTask id="task_screening"
-                       name="Sanctions and PEP screening"
-                       implementation="##WebService"
-                       operationRef="_op_screening">
+    <bpmn2:task id="task_screening"
+                       name="Sanctions and PEP screening" drools:taskName="SanctionsScreeningTask">
+            <bpmn2:ioSpecification>
+                <bpmn2:dataInput id="_di_scr" itemSubjectRef="_itemRequest" name="request"/>
+        <bpmn2:dataOutput id="_do_scr" itemSubjectRef="_itemRequest" name="request"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_scr</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_scr</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
       <bpmn2:incoming>f2</bpmn2:incoming>
       <bpmn2:outgoing>f3</bpmn2:outgoing>
-      <bpmn2:ioSpecification id="_ios_scr">
-        <bpmn2:dataInput id="_di_scr" itemSubjectRef="_itemRequest" name="request"/>
-        <bpmn2:dataOutput id="_do_scr" itemSubjectRef="_itemRequest" name="request"/>
-        <bpmn2:inputSet id="_is_scr"><bpmn2:dataInputRefs>_di_scr</bpmn2:dataInputRefs></bpmn2:inputSet>
-        <bpmn2:outputSet id="_os_scr"><bpmn2:dataOutputRefs>_do_scr</bpmn2:dataOutputRefs></bpmn2:outputSet>
-      </bpmn2:ioSpecification>
+      
       <bpmn2:dataInputAssociation id="_dia_scr">
         <bpmn2:sourceRef>request</bpmn2:sourceRef>
         <bpmn2:targetRef>_di_scr</bpmn2:targetRef>
@@ -74,27 +320,234 @@
         <bpmn2:sourceRef>_do_scr</bpmn2:sourceRef>
         <bpmn2:targetRef>request</bpmn2:targetRef>
       </bpmn2:dataOutputAssociation>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
 
     <bpmn2:businessRuleTask id="task_admissibility"
                             name="Assess admissibility"
                             implementation="http://www.jboss.org/drools/dmn">
-      <bpmn2:extensionElements>
-        <drools:metaData name="namespace"><drools:metaValue>https://bank.com/dmn/amendments</drools:metaValue></drools:metaData>
-        <drools:metaData name="model"><drools:metaValue>AmendmentAdmissibility</drools:metaValue></drools:metaData>
-      </bpmn2:extensionElements>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_task_admissibility_0" name="namespace"/>
+        <bpmn2:dataInput id="_di_task_admissibility_1" name="model"/>
+        <bpmn2:dataInput id="_di_task_admissibility_2" name="decision"/>
+        <bpmn2:dataInput id="_di_adm_amendmentType" name="amendmentType"/>
+        <bpmn2:dataInput id="_di_adm_accountStatus" name="accountStatus"/>
+        <bpmn2:dataInput id="_di_adm_requestorIsParty" name="requestorIsParty"/>
+        <bpmn2:dataInput id="_di_adm_mandatePermits" name="mandatePermits"/>
+        <bpmn2:dataInput id="_di_adm_channel" name="channel"/>
+        <bpmn2:dataInput id="_di_adm_screeningOutcome" name="screeningOutcome"/>
+        <bpmn2:dataInput id="_di_adm_inFlightAmendment" name="inFlightAmendment"/>
+        <bpmn2:dataInput id="_di_adm_accountIsJoint" name="accountIsJoint"/>
+        <bpmn2:dataInput id="_di_adm_riskBand" name="riskBand"/>
+        <bpmn2:dataOutput id="_do_adm_result" name="admissibility"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_task_admissibility_0</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_task_admissibility_1</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_task_admissibility_2</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_amendmentType</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_accountStatus</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_requestorIsParty</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_mandatePermits</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_channel</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_screeningOutcome</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_inFlightAmendment</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_accountIsJoint</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_adm_riskBand</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_adm_result</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_task_admissibility_0</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[https://bank.com/dmn/amendments]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_task_admissibility_0]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_task_admissibility_1</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[AmendmentAdmissibility]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_task_admissibility_1]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_task_admissibility_2</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[Admissibility]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_task_admissibility_2]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>amendmentType</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_amendmentType</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountStatus</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_accountStatus</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>requestorIsParty</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_requestorIsParty</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>mandatePermits</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_mandatePermits</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>channel</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_channel</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>screeningOutcome</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_screeningOutcome</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>inFlightAmendment</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_inFlightAmendment</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountIsJoint</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_accountIsJoint</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>riskBand</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_adm_riskBand</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_adm_result</bpmn2:sourceRef>
+        <bpmn2:targetRef>admissibility</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
       <bpmn2:incoming>f3</bpmn2:incoming>
       <bpmn2:outgoing>f4</bpmn2:outgoing>
     </bpmn2:businessRuleTask>
 
+    <bpmn2:task id="task_derive_plan" name="Derive execution plan" drools:taskName="DerivePlanTask">
+      <bpmn2:incoming>f4</bpmn2:incoming>
+      <bpmn2:outgoing>f4b</bpmn2:outgoing>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_task_derive_plan_request" name="request"/>
+        <bpmn2:dataInput id="_di_task_derive_plan_admissibility" name="admissibility"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_permittedCount" name="permittedCount"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_includesCoa" name="includesCoa"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_includesCon" name="includesCon"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_includesJointToSole" name="includesJointToSole"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_anyPermitted" name="anyPermitted"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_amendmentItems" name="amendmentItems"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_task_derive_plan_request</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_task_derive_plan_admissibility</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_task_derive_plan_permittedCount</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_task_derive_plan_includesCoa</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_task_derive_plan_includesCon</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_task_derive_plan_includesJointToSole</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_task_derive_plan_anyPermitted</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_task_derive_plan_amendmentItems</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>request</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_task_derive_plan_request</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>admissibility</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_task_derive_plan_admissibility</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_task_derive_plan_permittedCount</bpmn2:sourceRef>
+        <bpmn2:targetRef>permittedCount</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_task_derive_plan_includesCoa</bpmn2:sourceRef>
+        <bpmn2:targetRef>includesCoa</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_task_derive_plan_includesCon</bpmn2:sourceRef>
+        <bpmn2:targetRef>includesCon</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_task_derive_plan_includesJointToSole</bpmn2:sourceRef>
+        <bpmn2:targetRef>includesJointToSole</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_task_derive_plan_anyPermitted</bpmn2:sourceRef>
+        <bpmn2:targetRef>anyPermitted</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_task_derive_plan_amendmentItems</bpmn2:sourceRef>
+        <bpmn2:targetRef>amendmentItems</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
+
     <bpmn2:businessRuleTask id="task_sequencing"
                             name="Determine execution plan"
                             implementation="http://www.jboss.org/drools/dmn">
-      <bpmn2:extensionElements>
-        <drools:metaData name="namespace"><drools:metaValue>https://bank.com/dmn/amendments</drools:metaValue></drools:metaData>
-        <drools:metaData name="model"><drools:metaValue>AmendmentSequencing</drools:metaValue></drools:metaData>
-      </bpmn2:extensionElements>
-      <bpmn2:incoming>f4</bpmn2:incoming>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_task_sequencing_0" name="namespace"/>
+        <bpmn2:dataInput id="_di_task_sequencing_1" name="model"/>
+        <bpmn2:dataInput id="_di_task_sequencing_2" name="decision"/>
+        <bpmn2:dataInput id="_di_seq_permittedCount" name="permittedCount"/>
+        <bpmn2:dataInput id="_di_seq_includesJointToSole" name="includesJointToSole"/>
+        <bpmn2:dataInput id="_di_seq_includesCon" name="includesCon"/>
+        <bpmn2:dataInput id="_di_seq_includesCoa" name="includesCoa"/>
+        <bpmn2:dataOutput id="_do_seq_result" name="ExecutionPlan"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_task_sequencing_0</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_task_sequencing_1</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_task_sequencing_2</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_seq_permittedCount</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_seq_includesJointToSole</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_seq_includesCon</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_seq_includesCoa</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_seq_result</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_task_sequencing_0</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[https://bank.com/dmn/amendments]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_task_sequencing_0]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_task_sequencing_1</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[AmendmentSequencing]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_task_sequencing_1]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_task_sequencing_2</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[ExecutionPlan]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_task_sequencing_2]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>permittedCount</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_seq_permittedCount</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>includesJointToSole</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_seq_includesJointToSole</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>includesCon</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_seq_includesCon</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>includesCoa</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_seq_includesCoa</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_seq_result</bpmn2:sourceRef>
+        <bpmn2:targetRef>ExecutionPlan</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:incoming>f4b</bpmn2:incoming>
       <bpmn2:outgoing>f5</bpmn2:outgoing>
     </bpmn2:businessRuleTask>
 
@@ -107,32 +560,154 @@
     <bpmn2:subProcess id="sub_dispatch" name="Execute permitted amendments">
       <bpmn2:incoming>f6</bpmn2:incoming>
       <bpmn2:outgoing>f7</bpmn2:outgoing>
+      <bpmn2:ioSpecification id="_ios_dispatch">
+        <bpmn2:dataInput id="_di_dispatch_items" name="items"/>
+        <bpmn2:inputSet id="_is_dispatch">
+          <bpmn2:dataInputRefs>_di_dispatch_items</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet id="_os_dispatch"/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>amendmentItems</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_dispatch_items</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
       <bpmn2:multiInstanceLoopCharacteristics id="_mi_dispatch" isSequential="false">
-        <bpmn2:loopDataInputRef>request</bpmn2:loopDataInputRef>
+        <bpmn2:loopDataInputRef>_di_dispatch_items</bpmn2:loopDataInputRef>
+        <bpmn2:inputDataItem id="item" name="item"/>
       </bpmn2:multiInstanceLoopCharacteristics>
 
       <bpmn2:startEvent id="sub_start">
         <bpmn2:outgoing>sf1</bpmn2:outgoing>
       </bpmn2:startEvent>
 
+    <bpmn2:task id="sub_derive_type" name="Read amendment type" drools:taskName="ReadItemDetailTask">
+      <bpmn2:incoming>sf1</bpmn2:incoming>
+      <bpmn2:outgoing>sf1b</bpmn2:outgoing>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_sub_derive_type_item" name="item"/>
+        <bpmn2:dataOutput id="_do_sub_derive_type_itemType" name="itemType"/>
+        <bpmn2:dataOutput id="_do_sub_derive_type_isCoa" name="isCoa"/>
+        <bpmn2:dataOutput id="_do_sub_derive_type_isCon" name="isCon"/>
+        <bpmn2:dataOutput id="_do_sub_derive_type_isJointToSole" name="isJointToSole"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_sub_derive_type_item</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_sub_derive_type_itemType</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_sub_derive_type_isCoa</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_sub_derive_type_isCon</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_sub_derive_type_isJointToSole</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_sub_derive_type_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_sub_derive_type_itemType</bpmn2:sourceRef>
+        <bpmn2:targetRef>itemType</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_sub_derive_type_isCoa</bpmn2:sourceRef>
+        <bpmn2:targetRef>isCoa</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_sub_derive_type_isCon</bpmn2:sourceRef>
+        <bpmn2:targetRef>isCon</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_sub_derive_type_isJointToSole</bpmn2:sourceRef>
+        <bpmn2:targetRef>isJointToSole</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
+
       <bpmn2:exclusiveGateway id="gw_type" name="Amendment type" gatewayDirection="Diverging">
-        <bpmn2:incoming>sf1</bpmn2:incoming>
+        <bpmn2:incoming>sf1b</bpmn2:incoming>
         <bpmn2:outgoing>sf_coa</bpmn2:outgoing>
         <bpmn2:outgoing>sf_con</bpmn2:outgoing>
         <bpmn2:outgoing>sf_jts</bpmn2:outgoing>
       </bpmn2:exclusiveGateway>
 
-      <bpmn2:callActivity id="call_coa" name="Change of address" calledElement="amendment-coa">
+      <bpmn2:callActivity id="call_coa" name="Change of address" calledElement="amendment_coa">
+        <bpmn2:ioSpecification>
+          <bpmn2:dataInput id="_di_call_coa_item" name="item"/>
+          <bpmn2:dataInput id="_di_call_coa_accountId" name="accountId"/>
+          <bpmn2:dataInput id="_di_call_coa_requestId" name="requestId"/>
+          <bpmn2:inputSet>
+            <bpmn2:dataInputRefs>_di_call_coa_item</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>_di_call_coa_accountId</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>_di_call_coa_requestId</bpmn2:dataInputRefs>
+          </bpmn2:inputSet>
+          <bpmn2:outputSet/>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>item</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_coa_item</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>accountId</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_coa_accountId</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_coa_requestId</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
         <bpmn2:incoming>sf_coa</bpmn2:incoming>
         <bpmn2:outgoing>sf_coa_out</bpmn2:outgoing>
       </bpmn2:callActivity>
 
-      <bpmn2:callActivity id="call_con" name="Change of name" calledElement="amendment-con">
+      <bpmn2:callActivity id="call_con" name="Change of name" calledElement="amendment_con">
+        <bpmn2:ioSpecification>
+          <bpmn2:dataInput id="_di_call_con_item" name="item"/>
+          <bpmn2:dataInput id="_di_call_con_accountId" name="accountId"/>
+          <bpmn2:dataInput id="_di_call_con_requestId" name="requestId"/>
+          <bpmn2:inputSet>
+            <bpmn2:dataInputRefs>_di_call_con_item</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>_di_call_con_accountId</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>_di_call_con_requestId</bpmn2:dataInputRefs>
+          </bpmn2:inputSet>
+          <bpmn2:outputSet/>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>item</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_con_item</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>accountId</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_con_accountId</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_con_requestId</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
         <bpmn2:incoming>sf_con</bpmn2:incoming>
         <bpmn2:outgoing>sf_con_out</bpmn2:outgoing>
       </bpmn2:callActivity>
 
-      <bpmn2:callActivity id="call_jts" name="Joint to sole" calledElement="amendment-joint-to-sole">
+      <bpmn2:callActivity id="call_jts" name="Joint to sole" calledElement="amendment_joint_to_sole">
+        <bpmn2:ioSpecification>
+          <bpmn2:dataInput id="_di_call_jts_item" name="item"/>
+          <bpmn2:dataInput id="_di_call_jts_accountId" name="accountId"/>
+          <bpmn2:dataInput id="_di_call_jts_requestId" name="requestId"/>
+          <bpmn2:inputSet>
+            <bpmn2:dataInputRefs>_di_call_jts_item</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>_di_call_jts_accountId</bpmn2:dataInputRefs>
+            <bpmn2:dataInputRefs>_di_call_jts_requestId</bpmn2:dataInputRefs>
+          </bpmn2:inputSet>
+          <bpmn2:outputSet/>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>item</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_jts_item</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>accountId</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_jts_accountId</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
+        <bpmn2:dataInputAssociation>
+          <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+          <bpmn2:targetRef>_di_call_jts_requestId</bpmn2:targetRef>
+        </bpmn2:dataInputAssociation>
         <bpmn2:incoming>sf_jts</bpmn2:incoming>
         <bpmn2:outgoing>sf_jts_out</bpmn2:outgoing>
       </bpmn2:callActivity>
@@ -148,15 +723,16 @@
         <bpmn2:incoming>sf_end</bpmn2:incoming>
       </bpmn2:endEvent>
 
-      <bpmn2:sequenceFlow id="sf1" sourceRef="sub_start" targetRef="gw_type"/>
+      <bpmn2:sequenceFlow id="sf1" sourceRef="sub_start" targetRef="sub_derive_type"/>
+      <bpmn2:sequenceFlow id="sf1b" sourceRef="sub_derive_type" targetRef="gw_type"/>
       <bpmn2:sequenceFlow id="sf_coa" sourceRef="gw_type" targetRef="call_coa">
-        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.type = "COA"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">isCoa = true</bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
       <bpmn2:sequenceFlow id="sf_con" sourceRef="gw_type" targetRef="call_con">
-        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.type = "CON"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">isCon = true</bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
       <bpmn2:sequenceFlow id="sf_jts" sourceRef="gw_type" targetRef="call_jts">
-        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.type = "JOINT_TO_SOLE"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">isJointToSole = true</bpmn2:conditionExpression>
       </bpmn2:sequenceFlow>
       <bpmn2:sequenceFlow id="sf_coa_out" sourceRef="call_coa" targetRef="gw_type_join"/>
       <bpmn2:sequenceFlow id="sf_con_out" sourceRef="call_con" targetRef="gw_type_join"/>
@@ -164,14 +740,17 @@
       <bpmn2:sequenceFlow id="sf_end" sourceRef="gw_type_join" targetRef="sub_end"/>
     </bpmn2:subProcess>
 
-    <bpmn2:serviceTask id="task_aggregate"
-                       name="Aggregate outcomes and notify customer"
-                       implementation="##WebService"
-                       operationRef="_op_notify">
+    <bpmn2:exclusiveGateway id="gw_outcome_join" name="Join outcomes" gatewayDirection="Converging">
       <bpmn2:incoming>f7</bpmn2:incoming>
       <bpmn2:incoming>f_refuse</bpmn2:incoming>
+      <bpmn2:outgoing>f_join_out</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+
+    <bpmn2:task id="task_aggregate"
+                       name="Aggregate outcomes and notify customer" drools:taskName="CustomerNotificationTask">
+      <bpmn2:incoming>f_join_out</bpmn2:incoming>
       <bpmn2:outgoing>f8</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
 
     <bpmn2:endEvent id="end" name="Request closed">
       <bpmn2:incoming>f8</bpmn2:incoming>
@@ -180,27 +759,37 @@
     <bpmn2:sequenceFlow id="f1" sourceRef="start" targetRef="task_intake"/>
     <bpmn2:sequenceFlow id="f2" sourceRef="task_intake" targetRef="task_screening"/>
     <bpmn2:sequenceFlow id="f3" sourceRef="task_screening" targetRef="task_admissibility"/>
-    <bpmn2:sequenceFlow id="f4" sourceRef="task_admissibility" targetRef="task_sequencing"/>
+    <bpmn2:sequenceFlow id="f4" sourceRef="task_admissibility" targetRef="task_derive_plan"/>
+    <bpmn2:sequenceFlow id="f4b" sourceRef="task_derive_plan" targetRef="task_sequencing"/>
     <bpmn2:sequenceFlow id="f5" sourceRef="task_sequencing" targetRef="gw_any_permitted"/>
     <bpmn2:sequenceFlow id="f6" sourceRef="gw_any_permitted" targetRef="sub_dispatch">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">count(request.items[admissibility != "REFUSED"]) > 0</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">anyPermitted = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="f_refuse" sourceRef="gw_any_permitted" targetRef="task_aggregate">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">count(request.items[admissibility != "REFUSED"]) = 0</bpmn2:conditionExpression>
+    <bpmn2:sequenceFlow id="f_refuse" sourceRef="gw_any_permitted" targetRef="gw_outcome_join">
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">anyPermitted = false</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="f7" sourceRef="sub_dispatch" targetRef="task_aggregate"/>
+    <bpmn2:sequenceFlow id="f7" sourceRef="sub_dispatch" targetRef="gw_outcome_join"/>
+    <bpmn2:sequenceFlow id="f_join_out" sourceRef="gw_outcome_join" targetRef="task_aggregate"/>
     <bpmn2:sequenceFlow id="f8" sourceRef="task_aggregate" targetRef="end"/>
 
     <bpmn2:subProcess id="evsub_document" name="Extra document received" triggeredByEvent="true">
       <bpmn2:startEvent id="ev_doc_start" name="Document submitted" isInterrupting="false">
         <bpmn2:outgoing>ed1</bpmn2:outgoing>
+        
+        <bpmn2:dataOutput id="_do_ev_doc_start" name="_do_ev_doc_start"/>
+        <bpmn2:dataOutputAssociation>
+          <bpmn2:sourceRef>_do_ev_doc_start</bpmn2:sourceRef>
+          <bpmn2:targetRef>requestId</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_ev_doc_start</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
         <bpmn2:messageEventDefinition id="_med_doc" messageRef="_msg_document"/>
       </bpmn2:startEvent>
-      <bpmn2:serviceTask id="ev_doc_task" name="Attach and verify document"
-                         implementation="##WebService" operationRef="_op_document">
+      <bpmn2:task id="ev_doc_task" name="Attach and verify document" drools:taskName="DocumentVerificationTask">
         <bpmn2:incoming>ed1</bpmn2:incoming>
         <bpmn2:outgoing>ed2</bpmn2:outgoing>
-      </bpmn2:serviceTask>
+    </bpmn2:task>
       <bpmn2:endEvent id="ev_doc_end">
         <bpmn2:incoming>ed2</bpmn2:incoming>
       </bpmn2:endEvent>
@@ -211,9 +800,18 @@
     <bpmn2:subProcess id="evsub_verification" name="Additional verification" triggeredByEvent="true">
       <bpmn2:startEvent id="ev_ver_start" name="Verification required" isInterrupting="false">
         <bpmn2:outgoing>ev1</bpmn2:outgoing>
+        
+        <bpmn2:dataOutput id="_do_ev_ver_start" name="_do_ev_ver_start"/>
+        <bpmn2:dataOutputAssociation>
+          <bpmn2:sourceRef>_do_ev_ver_start</bpmn2:sourceRef>
+          <bpmn2:targetRef>requestId</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_ev_ver_start</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
         <bpmn2:messageEventDefinition id="_med_ver" messageRef="_msg_verification"/>
       </bpmn2:startEvent>
-      <bpmn2:userTask id="ev_ver_task" name="Complete additional verification">
+      <bpmn2:userTask id="ev_ver_task" name="Complete additional verification" drools:taskName="CompleteAdditionalVerification">
         <bpmn2:incoming>ev1</bpmn2:incoming>
         <bpmn2:outgoing>ev2</bpmn2:outgoing>
         <bpmn2:potentialOwner id="_po_ver">
@@ -232,13 +830,21 @@
     <bpmn2:subProcess id="evsub_cancel" name="Customer cancellation" triggeredByEvent="true">
       <bpmn2:startEvent id="ev_can_start" name="Cancellation received" isInterrupting="true">
         <bpmn2:outgoing>ec1</bpmn2:outgoing>
+        
+        <bpmn2:dataOutput id="_do_ev_can_start" name="_do_ev_can_start"/>
+        <bpmn2:dataOutputAssociation>
+          <bpmn2:sourceRef>_do_ev_can_start</bpmn2:sourceRef>
+          <bpmn2:targetRef>requestId</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_ev_can_start</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
         <bpmn2:messageEventDefinition id="_med_can" messageRef="_msg_cancel"/>
       </bpmn2:startEvent>
-      <bpmn2:serviceTask id="ev_can_task" name="Roll back and close request"
-                         implementation="##WebService" operationRef="_op_cancel">
+      <bpmn2:task id="ev_can_task" name="Roll back and close request" drools:taskName="RequestCancellationTask">
         <bpmn2:incoming>ec1</bpmn2:incoming>
         <bpmn2:outgoing>ec2</bpmn2:outgoing>
-      </bpmn2:serviceTask>
+    </bpmn2:task>
       <bpmn2:endEvent id="ev_can_end" name="Request cancelled">
         <bpmn2:incoming>ec2</bpmn2:incoming>
         <bpmn2:terminateEventDefinition id="_ted_can"/>
@@ -250,15 +856,12 @@
     <bpmn2:subProcess id="evsub_sla" name="SLA escalation" triggeredByEvent="true">
       <bpmn2:startEvent id="ev_sla_start" name="SLA breached" isInterrupting="false">
         <bpmn2:outgoing>es1</bpmn2:outgoing>
-        <bpmn2:timerEventDefinition id="_ted_sla">
-          <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">PT120H</bpmn2:timeDuration>
-        </bpmn2:timerEventDefinition>
+        <bpmn2:signalEventDefinition id="_sed_sla" signalRef="_sig_sla"/>
       </bpmn2:startEvent>
-      <bpmn2:serviceTask id="ev_sla_task" name="Escalate to operations"
-                         implementation="##WebService" operationRef="_op_escalate">
+      <bpmn2:task id="ev_sla_task" name="Escalate to operations" drools:taskName="SlaEscalationTask">
         <bpmn2:incoming>es1</bpmn2:incoming>
         <bpmn2:outgoing>es2</bpmn2:outgoing>
-      </bpmn2:serviceTask>
+    </bpmn2:task>
       <bpmn2:endEvent id="ev_sla_end">
         <bpmn2:incoming>es2</bpmn2:incoming>
       </bpmn2:endEvent>
@@ -267,31 +870,69 @@
     </bpmn2:subProcess>
 
   </bpmn2:process>
-
-  <bpmndi:BPMNDiagram id="_diag_amendment">
-    <bpmndi:BPMNPlane id="_plane_amendment" bpmnElement="amendment-request">
-      <bpmndi:BPMNShape id="_s_start" bpmnElement="start"><dc:Bounds x="60" y="120" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_intake" bpmnElement="task_intake"><dc:Bounds x="140" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_scr" bpmnElement="task_screening"><dc:Bounds x="300" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_adm" bpmnElement="task_admissibility"><dc:Bounds x="460" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_seq" bpmnElement="task_sequencing"><dc:Bounds x="620" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_gw" bpmnElement="gw_any_permitted"><dc:Bounds x="780" y="118" width="40" height="40"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_sub" bpmnElement="sub_dispatch"><dc:Bounds x="860" y="60" width="360" height="160"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_agg" bpmnElement="task_aggregate"><dc:Bounds x="1260" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_end" bpmnElement="end"><dc:Bounds x="1420" y="120" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_evdoc" bpmnElement="evsub_document"><dc:Bounds x="140" y="280" width="280" height="120"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_evver" bpmnElement="evsub_verification"><dc:Bounds x="460" y="280" width="280" height="120"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_evcan" bpmnElement="evsub_cancel"><dc:Bounds x="780" y="280" width="280" height="120"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_s_evsla" bpmnElement="evsub_sla"><dc:Bounds x="1100" y="280" width="280" height="120"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="_e_f1" bpmnElement="f1"><di:waypoint x="96" y="138"/><di:waypoint x="140" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f2" bpmnElement="f2"><di:waypoint x="260" y="138"/><di:waypoint x="300" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f3" bpmnElement="f3"><di:waypoint x="420" y="138"/><di:waypoint x="460" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f4" bpmnElement="f4"><di:waypoint x="580" y="138"/><di:waypoint x="620" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f5" bpmnElement="f5"><di:waypoint x="740" y="138"/><di:waypoint x="780" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f6" bpmnElement="f6"><di:waypoint x="820" y="138"/><di:waypoint x="860" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f7" bpmnElement="f7"><di:waypoint x="1220" y="138"/><di:waypoint x="1260" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_f8" bpmnElement="f8"><di:waypoint x="1380" y="138"/><di:waypoint x="1420" y="138"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="_e_frefuse" bpmnElement="f_refuse"><di:waypoint x="800" y="158"/><di:waypoint x="800" y="240"/><di:waypoint x="1320" y="240"/><di:waypoint x="1320" y="178"/></bpmndi:BPMNEdge>
+  <bpmndi:BPMNDiagram id="diag_amendment_request">
+    <bpmndi:BPMNPlane id="plane_amendment_request" bpmnElement="amendment_request">
+      <bpmndi:BPMNShape id="shape_sub_dispatch" bpmnElement="sub_dispatch" isExpanded="true"><dc:Bounds x="1126" y="80" width="682" height="420"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_evsub_cancel" bpmnElement="evsub_cancel" isExpanded="true"><dc:Bounds x="60" y="610" width="442" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_evsub_document" bpmnElement="evsub_document" isExpanded="true"><dc:Bounds x="60" y="840" width="442" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_evsub_sla" bpmnElement="evsub_sla" isExpanded="true"><dc:Bounds x="60" y="1070" width="442" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_evsub_verification" bpmnElement="evsub_verification" isExpanded="true"><dc:Bounds x="60" y="1300" width="442" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_start" bpmnElement="start"><dc:Bounds x="60" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_intake" bpmnElement="task_intake"><dc:Bounds x="166" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_screening" bpmnElement="task_screening"><dc:Bounds x="376" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_admissibility" bpmnElement="task_admissibility"><dc:Bounds x="586" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_derive_plan" bpmnElement="task_derive_plan"><dc:Bounds x="740" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_sequencing" bpmnElement="task_sequencing"><dc:Bounds x="796" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_gw_any_permitted" bpmnElement="gw_any_permitted"><dc:Bounds x="1006" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_sub_start" bpmnElement="sub_start"><dc:Bounds x="1171" y="140" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_gw_type" bpmnElement="gw_type"><dc:Bounds x="1277" y="140" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_call_coa" bpmnElement="call_coa"><dc:Bounds x="1397" y="140" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_call_con" bpmnElement="call_con"><dc:Bounds x="1397" y="265" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_call_jts" bpmnElement="call_jts"><dc:Bounds x="1397" y="390" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_gw_type_join" bpmnElement="gw_type_join"><dc:Bounds x="1607" y="140" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_sub_end" bpmnElement="sub_end"><dc:Bounds x="1727" y="140" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_gw_outcome_join" bpmnElement="gw_outcome_join"><dc:Bounds x="1878" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_task_aggregate" bpmnElement="task_aggregate"><dc:Bounds x="1998" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_end" bpmnElement="end"><dc:Bounds x="2208" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_can_start" bpmnElement="ev_can_start"><dc:Bounds x="105" y="670" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_can_task" bpmnElement="ev_can_task"><dc:Bounds x="211" y="670" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_can_end" bpmnElement="ev_can_end"><dc:Bounds x="421" y="670" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_doc_start" bpmnElement="ev_doc_start"><dc:Bounds x="105" y="900" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_doc_task" bpmnElement="ev_doc_task"><dc:Bounds x="211" y="900" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_doc_end" bpmnElement="ev_doc_end"><dc:Bounds x="421" y="900" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_sla_start" bpmnElement="ev_sla_start"><dc:Bounds x="105" y="1130" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_sla_task" bpmnElement="ev_sla_task"><dc:Bounds x="211" y="1130" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_sla_end" bpmnElement="ev_sla_end"><dc:Bounds x="421" y="1130" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_ver_start" bpmnElement="ev_ver_start"><dc:Bounds x="105" y="1360" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_ver_task" bpmnElement="ev_ver_task"><dc:Bounds x="211" y="1360" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_ev_ver_end" bpmnElement="ev_ver_end"><dc:Bounds x="421" y="1360" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_sf1" bpmnElement="sf1"><di:waypoint x="1207" y="158"/><di:waypoint x="1277" y="165"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_coa" bpmnElement="sf_coa"><di:waypoint x="1327" y="165"/><di:waypoint x="1397" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_con" bpmnElement="sf_con"><di:waypoint x="1327" y="165"/><di:waypoint x="1397" y="305"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_jts" bpmnElement="sf_jts"><di:waypoint x="1327" y="165"/><di:waypoint x="1397" y="430"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_coa_out" bpmnElement="sf_coa_out"><di:waypoint x="1537" y="180"/><di:waypoint x="1607" y="165"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_con_out" bpmnElement="sf_con_out"><di:waypoint x="1537" y="305"/><di:waypoint x="1607" y="165"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_jts_out" bpmnElement="sf_jts_out"><di:waypoint x="1537" y="430"/><di:waypoint x="1607" y="165"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_sf_end" bpmnElement="sf_end"><di:waypoint x="1657" y="165"/><di:waypoint x="1727" y="158"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f1" bpmnElement="f1"><di:waypoint x="96" y="98"/><di:waypoint x="166" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f2" bpmnElement="f2"><di:waypoint x="306" y="120"/><di:waypoint x="376" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f3" bpmnElement="f3"><di:waypoint x="516" y="120"/><di:waypoint x="586" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f4" bpmnElement="f4"><di:waypoint x="726" y="120"/><di:waypoint x="796" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f5" bpmnElement="f5"><di:waypoint x="936" y="120"/><di:waypoint x="1006" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f6" bpmnElement="f6"><di:waypoint x="1056" y="105"/><di:waypoint x="1126" y="290"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f_refuse" bpmnElement="f_refuse"><di:waypoint x="1056" y="105"/><di:waypoint x="1878" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f7" bpmnElement="f7"><di:waypoint x="1808" y="290"/><di:waypoint x="1878" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f_join_out" bpmnElement="f_join_out"><di:waypoint x="1928" y="105"/><di:waypoint x="1998" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f8" bpmnElement="f8"><di:waypoint x="2138" y="120"/><di:waypoint x="2208" y="98"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_ed1" bpmnElement="ed1"><di:waypoint x="141" y="918"/><di:waypoint x="211" y="940"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_ed2" bpmnElement="ed2"><di:waypoint x="351" y="940"/><di:waypoint x="421" y="918"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_ev1" bpmnElement="ev1"><di:waypoint x="141" y="1378"/><di:waypoint x="211" y="1400"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_ev2" bpmnElement="ev2"><di:waypoint x="351" y="1400"/><di:waypoint x="421" y="1378"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_ec1" bpmnElement="ec1"><di:waypoint x="141" y="688"/><di:waypoint x="211" y="710"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_ec2" bpmnElement="ec2"><di:waypoint x="351" y="710"/><di:waypoint x="421" y="688"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_es1" bpmnElement="es1"><di:waypoint x="141" y="1148"/><di:waypoint x="211" y="1170"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_es2" bpmnElement="es2"><di:waypoint x="351" y="1170"/><di:waypoint x="421" y="1148"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_f4b" bpmnElement="f4b"><di:waypoint x="880" y="120"/><di:waypoint x="950" y="120"/></bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>

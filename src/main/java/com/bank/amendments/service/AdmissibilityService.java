@@ -3,7 +3,7 @@ package com.bank.amendments.service;
 import com.bank.amendments.model.*;
 import com.bank.amendments.model.Enums.*;
 import org.kie.kogito.decision.DecisionModel;
-import org.kie.kogito.decision.DecisionModels;
+import org.kie.kogito.app.DecisionModels;
 import org.kie.dmn.api.core.DMNContext;
 import org.kie.dmn.api.core.DMNResult;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,12 @@ public class AdmissibilityService {
     private static final String ADMISSIBILITY_MODEL = "AmendmentAdmissibility";
     private static final String SEQUENCING_MODEL = "AmendmentSequencing";
 
+    /**
+     * The generated org.kie.kogito.app.DecisionModels is the Spring bean.
+     * It extends AbstractDecisionModels, which does not implement the
+     * org.kie.kogito.decision.DecisionModels interface in this line, so the
+     * concrete type is what can be injected.
+     */
     private final DecisionModels decisionModels;
 
     public AdmissibilityService(DecisionModels decisionModels) {

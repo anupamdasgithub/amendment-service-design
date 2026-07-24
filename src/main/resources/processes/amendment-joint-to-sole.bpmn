@@ -3,6 +3,7 @@
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                    xmlns:drools="http://www.jboss.org/drools"
                    id="_jts_defs"
                    targetNamespace="https://bank.com/bpmn/amendments"
@@ -13,24 +14,72 @@
   <bpmn2:message id="_j_msg_dispute" name="ConsentDisputed" itemRef="_j_itemString"/>
   <bpmn2:message id="_j_msg_consent" name="ConsentResponseReceived" itemRef="_j_itemString"/>
 
-  <bpmn2:process id="amendment-joint-to-sole" name="Joint to Sole Conversion" isExecutable="true" processType="Public">
+  <bpmn2:error id="_j_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
 
-    <bpmn2:property id="item" itemSubjectRef="_j_itemItem" name="item"/>
-    <bpmn2:property id="requestId" itemSubjectRef="_j_itemString" name="requestId"/>
+
+  <bpmn2:process id="amendment_joint_to_sole" name="Joint to Sole Conversion" isExecutable="true" processType="Public">
+
+    <bpmn2:property id="allConsentsGranted"/>
+    <bpmn2:property id="jtsDiverted"/>
+    <bpmn2:property id="jtsReviewRequired"/>
+    <bpmn2:property id="jtsEligible"/>
+    <bpmn2:property id="JtsEligibility"/>
+    <bpmn2:property id="accountId"/>
+    <bpmn2:property id="item" itemSubjectRef="_j_itemItem" name="item">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="requestId" itemSubjectRef="_j_itemString" name="requestId">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
 
     <bpmn2:startEvent id="j_start" name="Start"><bpmn2:outgoing>jf1</bpmn2:outgoing></bpmn2:startEvent>
 
-    <bpmn2:serviceTask id="j_parties" name="Resolve parties and liabilities"
-                       implementation="##WebService" operationRef="_op_parties">
+    <bpmn2:task id="j_parties" name="Resolve parties and liabilities" drools:taskName="PartyResolutionTask">
       <bpmn2:incoming>jf1</bpmn2:incoming><bpmn2:outgoing>jf2</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
 
     <bpmn2:businessRuleTask id="j_eligibility" name="Assess conversion eligibility"
                             implementation="http://www.jboss.org/drools/dmn">
-      <bpmn2:extensionElements>
-        <drools:metaData name="namespace"><drools:metaValue>https://bank.com/dmn/amendments</drools:metaValue></drools:metaData>
-        <drools:metaData name="model"><drools:metaValue>JointToSoleEligibility</drools:metaValue></drools:metaData>
-      </bpmn2:extensionElements>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_j_eligibility_0" name="namespace"/>
+        <bpmn2:dataInput id="_di_j_eligibility_1" name="model"/>
+        <bpmn2:dataInput id="_di_j_eligibility_2" name="decision"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_j_eligibility_0</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_1</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_2</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_j_eligibility_0</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[https://bank.com/dmn/amendments]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_j_eligibility_0]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_j_eligibility_1</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[JointToSoleEligibility]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_j_eligibility_1]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_j_eligibility_2</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[JtsEligibility]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_j_eligibility_2]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
       <bpmn2:incoming>jf2</bpmn2:incoming><bpmn2:outgoing>jf3</bpmn2:outgoing>
     </bpmn2:businessRuleTask>
 
@@ -41,13 +90,12 @@
       <bpmn2:outgoing>jf_consent</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
 
-    <bpmn2:serviceTask id="j_divert" name="Divert to specialist journey"
-                       implementation="##WebService" operationRef="_op_divert">
+    <bpmn2:task id="j_divert" name="Divert to specialist journey" drools:taskName="JourneyDiversionTask">
       <bpmn2:incoming>jf_divert</bpmn2:incoming><bpmn2:outgoing>jf_divert_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="j_end_divert" name="Diverted"><bpmn2:incoming>jf_divert_out</bpmn2:incoming></bpmn2:endEvent>
 
-    <bpmn2:userTask id="j_review" name="Underwriting review">
+    <bpmn2:userTask id="j_review" name="Underwriting review" drools:taskName="UnderwritingReview">
       <bpmn2:incoming>jf_review</bpmn2:incoming><bpmn2:outgoing>jf_review_out</bpmn2:outgoing>
       <bpmn2:potentialOwner id="_j_po1">
         <bpmn2:resourceAssignmentExpression id="_j_rae1">
@@ -68,16 +116,30 @@
 
       <bpmn2:startEvent id="j_c_start"><bpmn2:outgoing>jc1</bpmn2:outgoing></bpmn2:startEvent>
 
-      <bpmn2:serviceTask id="j_c_request" name="Request consent from party"
-                         implementation="##WebService" operationRef="_op_consent_request">
+      <bpmn2:task id="j_c_request" name="Request consent from party" drools:taskName="ConsentRequestTask">
         <bpmn2:incoming>jc1</bpmn2:incoming><bpmn2:outgoing>jc2</bpmn2:outgoing>
-      </bpmn2:serviceTask>
+    </bpmn2:task>
 
-      <bpmn2:intermediateCatchEvent id="j_c_wait" name="Await consent response">
+      <!--
+        Receive Task rather than an intermediate catch event: the engine only
+        permits boundary events on activities, and this wait needs the
+        consent-expiry timer attached to it.
+      -->
+      <bpmn2:receiveTask id="j_c_wait" name="Await consent response"
+                         messageRef="_j_msg_consent">
         <bpmn2:incoming>jc2</bpmn2:incoming><bpmn2:outgoing>jc3</bpmn2:outgoing>
-        <bpmn2:messageEventDefinition id="_j_med_c" messageRef="_j_msg_consent"/>
-        <bpmn2:boundaryEventRefs>j_c_expiry</bpmn2:boundaryEventRefs>
-      </bpmn2:intermediateCatchEvent>
+        <bpmn2:ioSpecification>
+          <bpmn2:dataOutput id="_do_j_c_wait" name="_do_j_c_wait"/>
+          <bpmn2:inputSet/>
+          <bpmn2:outputSet>
+            <bpmn2:dataOutputRefs>_do_j_c_wait</bpmn2:dataOutputRefs>
+          </bpmn2:outputSet>
+        </bpmn2:ioSpecification>
+        <bpmn2:dataOutputAssociation>
+          <bpmn2:sourceRef>_do_j_c_wait</bpmn2:sourceRef>
+          <bpmn2:targetRef>requestId</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+      </bpmn2:receiveTask>
 
       <bpmn2:boundaryEvent id="j_c_expiry" name="Consent expiry" attachedToRef="j_c_wait" cancelActivity="true">
         <bpmn2:outgoing>jc_exp</bpmn2:outgoing>
@@ -86,10 +148,9 @@
         </bpmn2:timerEventDefinition>
       </bpmn2:boundaryEvent>
 
-      <bpmn2:serviceTask id="j_c_expire" name="Mark consent expired"
-                         implementation="##WebService" operationRef="_op_consent_expire">
+      <bpmn2:task id="j_c_expire" name="Mark consent expired" drools:taskName="ConsentExpiryTask">
         <bpmn2:incoming>jc_exp</bpmn2:incoming><bpmn2:outgoing>jc_exp_out</bpmn2:outgoing>
-      </bpmn2:serviceTask>
+    </bpmn2:task>
       <bpmn2:endEvent id="j_c_end_exp"><bpmn2:incoming>jc_exp_out</bpmn2:incoming></bpmn2:endEvent>
 
       <bpmn2:endEvent id="j_c_end"><bpmn2:incoming>jc3</bpmn2:incoming></bpmn2:endEvent>
@@ -101,19 +162,65 @@
       <bpmn2:sequenceFlow id="jc_exp_out" sourceRef="j_c_expire" targetRef="j_c_end_exp"/>
     </bpmn2:subProcess>
 
-    <bpmn2:exclusiveGateway id="j_gw_all_consent" name="All consents granted" gatewayDirection="Diverging">
+    <bpmn2:task id="j_derive" name="Read consent status" drools:taskName="ReadItemDetailTask">
       <bpmn2:incoming>jf5</bpmn2:incoming>
+      <bpmn2:outgoing>jf5b</bpmn2:outgoing>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_j_derive_item" name="item"/>
+        <bpmn2:dataInput id="_di_j_derive_elig" name="JtsEligibility"/>
+        <bpmn2:dataOutput id="_do_j_derive_allConsentsGranted" name="allConsentsGranted"/>
+        <bpmn2:dataOutput id="_do_j_derive_jtsDiverted" name="jtsDiverted"/>
+        <bpmn2:dataOutput id="_do_j_derive_jtsReviewRequired" name="jtsReviewRequired"/>
+        <bpmn2:dataOutput id="_do_j_derive_jtsEligible" name="jtsEligible"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_j_derive_item</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_derive_elig</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_j_derive_allConsentsGranted</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_derive_jtsDiverted</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_derive_jtsReviewRequired</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_derive_jtsEligible</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_derive_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>JtsEligibility</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_derive_elig</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_derive_allConsentsGranted</bpmn2:sourceRef>
+        <bpmn2:targetRef>allConsentsGranted</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_derive_jtsDiverted</bpmn2:sourceRef>
+        <bpmn2:targetRef>jtsDiverted</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_derive_jtsReviewRequired</bpmn2:sourceRef>
+        <bpmn2:targetRef>jtsReviewRequired</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_derive_jtsEligible</bpmn2:sourceRef>
+        <bpmn2:targetRef>jtsEligible</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
+
+    <bpmn2:exclusiveGateway id="j_gw_all_consent" name="All consents granted" gatewayDirection="Diverging">
+      <bpmn2:incoming>jf5b</bpmn2:incoming>
       <bpmn2:outgoing>jf_granted</bpmn2:outgoing>
       <bpmn2:outgoing>jf_declined</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
 
-    <bpmn2:serviceTask id="j_refuse" name="Record refusal"
-                       implementation="##WebService" operationRef="_op_fail">
+    <bpmn2:task id="j_refuse" name="Record refusal" drools:taskName="FailureRecordingTask">
       <bpmn2:incoming>jf_declined</bpmn2:incoming><bpmn2:outgoing>jf_ref_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="j_end_refused" name="Refused"><bpmn2:incoming>jf_ref_out</bpmn2:incoming></bpmn2:endEvent>
 
-    <bpmn2:userTask id="j_approve" name="Maker checker approval">
+    <bpmn2:userTask id="j_approve" name="Maker checker approval" drools:taskName="MakerCheckerApproval">
       <bpmn2:incoming>jf_granted</bpmn2:incoming><bpmn2:outgoing>jf6</bpmn2:outgoing>
       <bpmn2:potentialOwner id="_j_po2">
         <bpmn2:resourceAssignmentExpression id="_j_rae2">
@@ -122,21 +229,51 @@
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
 
-    <bpmn2:serviceTask id="j_convert" name="Convert account in core banking"
-                       implementation="##WebService" operationRef="_op_core_convert">
+    <bpmn2:task id="j_convert" name="Convert account in core banking" drools:taskName="CoreBankingTask">
       <bpmn2:incoming>jf6</bpmn2:incoming><bpmn2:outgoing>jf7</bpmn2:outgoing>
-      <bpmn2:boundaryEventRefs>j_convert_error</bpmn2:boundaryEventRefs>
-    </bpmn2:serviceTask>
+    
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_j_convert_item" name="item"/>
+        <bpmn2:dataInput id="_di_j_convert_operation" name="operation"/>
+        <bpmn2:dataInput id="_di_j_convert_accountId" name="accountId"/>
+        <bpmn2:dataInput id="_di_j_convert_idempotencyKey" name="idempotencyKey"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_j_convert_item</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_convert_operation</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_convert_accountId</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_convert_idempotencyKey</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_convert_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_j_convert_operation</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[CONVERT_TO_SOLE]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_j_convert_operation]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_convert_accountId</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_convert_idempotencyKey</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:task>
 
     <bpmn2:boundaryEvent id="j_convert_error" name="Core failure" attachedToRef="j_convert" cancelActivity="true">
       <bpmn2:outgoing>jf_err</bpmn2:outgoing>
       <bpmn2:errorEventDefinition id="_j_eed" errorRef="_j_err"/>
     </bpmn2:boundaryEvent>
 
-    <bpmn2:serviceTask id="j_compensate" name="Compensate and refer"
-                       implementation="##WebService" operationRef="_op_compensate">
+    <bpmn2:task id="j_compensate" name="Compensate and refer" drools:taskName="CompensationTask">
       <bpmn2:incoming>jf_err</bpmn2:incoming><bpmn2:outgoing>jf_err_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="j_end_failed" name="Failed"><bpmn2:incoming>jf_err_out</bpmn2:incoming></bpmn2:endEvent>
 
     <bpmn2:endEvent id="j_end" name="Converted"><bpmn2:incoming>jf7</bpmn2:incoming></bpmn2:endEvent>
@@ -145,23 +282,24 @@
     <bpmn2:sequenceFlow id="jf2" sourceRef="j_parties" targetRef="j_eligibility"/>
     <bpmn2:sequenceFlow id="jf3" sourceRef="j_eligibility" targetRef="j_gw_elig"/>
     <bpmn2:sequenceFlow id="jf_divert" sourceRef="j_gw_elig" targetRef="j_divert">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">JtsEligibility.outcome = "DIVERTED"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">jtsDiverted = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="jf_review" sourceRef="j_gw_elig" targetRef="j_review">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">JtsEligibility.outcome = "REVIEW_REQUIRED"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">jtsReviewRequired = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="jf_consent" sourceRef="j_gw_elig" targetRef="j_gw_consent_join">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">JtsEligibility.outcome = "ELIGIBLE"</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">jtsEligible = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="jf_divert_out" sourceRef="j_divert" targetRef="j_end_divert"/>
     <bpmn2:sequenceFlow id="jf_review_out" sourceRef="j_review" targetRef="j_gw_consent_join"/>
     <bpmn2:sequenceFlow id="jf4" sourceRef="j_gw_consent_join" targetRef="j_consent_loop"/>
-    <bpmn2:sequenceFlow id="jf5" sourceRef="j_consent_loop" targetRef="j_gw_all_consent"/>
+    <bpmn2:sequenceFlow id="jf5" sourceRef="j_consent_loop" targetRef="j_derive"/>
+    <bpmn2:sequenceFlow id="jf5b" sourceRef="j_derive" targetRef="j_gw_all_consent"/>
     <bpmn2:sequenceFlow id="jf_granted" sourceRef="j_gw_all_consent" targetRef="j_approve">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.jointToSole.allConsentsGranted = true</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">allConsentsGranted = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="jf_declined" sourceRef="j_gw_all_consent" targetRef="j_refuse">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.jointToSole.allConsentsGranted = false</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">allConsentsGranted = false</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="jf_ref_out" sourceRef="j_refuse" targetRef="j_end_refused"/>
     <bpmn2:sequenceFlow id="jf6" sourceRef="j_approve" targetRef="j_convert"/>
@@ -172,9 +310,18 @@
     <bpmn2:subProcess id="j_evsub_dispute" name="Party disputes consent" triggeredByEvent="true">
       <bpmn2:startEvent id="j_d_start" name="Dispute raised" isInterrupting="true">
         <bpmn2:outgoing>jd1</bpmn2:outgoing>
+        
+        <bpmn2:dataOutput id="_do_j_d_start" name="_do_j_d_start"/>
+        <bpmn2:dataOutputAssociation>
+          <bpmn2:sourceRef>_do_j_d_start</bpmn2:sourceRef>
+          <bpmn2:targetRef>requestId</bpmn2:targetRef>
+        </bpmn2:dataOutputAssociation>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_j_d_start</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
         <bpmn2:messageEventDefinition id="_j_med_d" messageRef="_j_msg_dispute"/>
       </bpmn2:startEvent>
-      <bpmn2:userTask id="j_d_task" name="Investigate consent dispute">
+      <bpmn2:userTask id="j_d_task" name="Investigate consent dispute" drools:taskName="InvestigateConsentDispute">
         <bpmn2:incoming>jd1</bpmn2:incoming><bpmn2:outgoing>jd2</bpmn2:outgoing>
         <bpmn2:potentialOwner id="_j_po3">
           <bpmn2:resourceAssignmentExpression id="_j_rae3">
@@ -191,20 +338,61 @@
     </bpmn2:subProcess>
 
   </bpmn2:process>
-
-  <bpmn2:error id="_j_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
-
-  <bpmndi:BPMNDiagram id="_j_diag">
-    <bpmndi:BPMNPlane id="_j_plane" bpmnElement="amendment-joint-to-sole">
-      <bpmndi:BPMNShape id="_js_start" bpmnElement="j_start"><dc:Bounds x="60" y="140" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_parties" bpmnElement="j_parties"><dc:Bounds x="140" y="118" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_elig" bpmnElement="j_eligibility"><dc:Bounds x="300" y="118" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_gw" bpmnElement="j_gw_elig"><dc:Bounds x="460" y="138" width="40" height="40"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_loop" bpmnElement="j_consent_loop"><dc:Bounds x="540" y="80" width="280" height="160"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_approve" bpmnElement="j_approve"><dc:Bounds x="880" y="118" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_convert" bpmnElement="j_convert"><dc:Bounds x="1040" y="118" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_end" bpmnElement="j_end"><dc:Bounds x="1200" y="140" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_js_disp" bpmnElement="j_evsub_dispute"><dc:Bounds x="540" y="300" width="280" height="120"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNDiagram id="diag_amendment_joint_to_sole">
+    <bpmndi:BPMNPlane id="plane_amendment_joint_to_sole" bpmnElement="amendment_joint_to_sole">
+      <bpmndi:BPMNShape id="shape_j_consent_loop" bpmnElement="j_consent_loop" isExpanded="true"><dc:Bounds x="1140" y="80" width="756" height="251"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_evsub_dispute" bpmnElement="j_evsub_dispute" isExpanded="true"><dc:Bounds x="60" y="441" width="442" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_compensate" bpmnElement="j_compensate"><dc:Bounds x="60" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_start" bpmnElement="j_start"><dc:Bounds x="60" y="205" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_end_failed" bpmnElement="j_end_failed"><dc:Bounds x="270" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_parties" bpmnElement="j_parties"><dc:Bounds x="270" y="161" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_eligibility" bpmnElement="j_eligibility"><dc:Bounds x="480" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_gw_elig" bpmnElement="j_gw_elig"><dc:Bounds x="690" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_divert" bpmnElement="j_divert"><dc:Bounds x="810" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_review" bpmnElement="j_review"><dc:Bounds x="810" y="205" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_end_divert" bpmnElement="j_end_divert"><dc:Bounds x="1020" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_gw_consent_join" bpmnElement="j_gw_consent_join"><dc:Bounds x="1020" y="161" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_expire" bpmnElement="j_c_expire"><dc:Bounds x="1185" y="140" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_start" bpmnElement="j_c_start"><dc:Bounds x="1185" y="265" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_end_exp" bpmnElement="j_c_end_exp"><dc:Bounds x="1395" y="140" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_request" bpmnElement="j_c_request"><dc:Bounds x="1395" y="221" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_wait" bpmnElement="j_c_wait"><dc:Bounds x="1605" y="140" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_end" bpmnElement="j_c_end"><dc:Bounds x="1815" y="140" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_gw_all_consent" bpmnElement="j_gw_all_consent"><dc:Bounds x="1966" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_approve" bpmnElement="j_approve"><dc:Bounds x="2086" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_refuse" bpmnElement="j_refuse"><dc:Bounds x="2086" y="205" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_convert" bpmnElement="j_convert"><dc:Bounds x="2296" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_end_refused" bpmnElement="j_end_refused"><dc:Bounds x="2296" y="205" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_end" bpmnElement="j_end"><dc:Bounds x="2506" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_d_start" bpmnElement="j_d_start"><dc:Bounds x="105" y="501" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_d_task" bpmnElement="j_d_task"><dc:Bounds x="211" y="501" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_d_end" bpmnElement="j_d_end"><dc:Bounds x="421" y="501" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_c_expiry" bpmnElement="j_c_expiry"><dc:Bounds x="1727" y="202" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_j_convert_error" bpmnElement="j_convert_error"><dc:Bounds x="2418" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_jc1" bpmnElement="jc1"><di:waypoint x="1221" y="283"/><di:waypoint x="1395" y="261"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jc2" bpmnElement="jc2"><di:waypoint x="1535" y="261"/><di:waypoint x="1605" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jc3" bpmnElement="jc3"><di:waypoint x="1745" y="180"/><di:waypoint x="1815" y="158"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jc_exp" bpmnElement="jc_exp"><di:waypoint x="1763" y="220"/><di:waypoint x="1185" y="180"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jc_exp_out" bpmnElement="jc_exp_out"><di:waypoint x="1325" y="180"/><di:waypoint x="1395" y="158"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf1" bpmnElement="jf1"><di:waypoint x="96" y="223"/><di:waypoint x="270" y="201"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf2" bpmnElement="jf2"><di:waypoint x="410" y="201"/><di:waypoint x="480" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf3" bpmnElement="jf3"><di:waypoint x="620" y="120"/><di:waypoint x="690" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_divert" bpmnElement="jf_divert"><di:waypoint x="740" y="105"/><di:waypoint x="810" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_review" bpmnElement="jf_review"><di:waypoint x="740" y="105"/><di:waypoint x="810" y="245"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_consent" bpmnElement="jf_consent"><di:waypoint x="740" y="105"/><di:waypoint x="1020" y="186"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_divert_out" bpmnElement="jf_divert_out"><di:waypoint x="950" y="120"/><di:waypoint x="1020" y="98"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_review_out" bpmnElement="jf_review_out"><di:waypoint x="950" y="245"/><di:waypoint x="1020" y="186"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf4" bpmnElement="jf4"><di:waypoint x="1070" y="186"/><di:waypoint x="1140" y="205"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf5" bpmnElement="jf5"><di:waypoint x="1896" y="205"/><di:waypoint x="1966" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_granted" bpmnElement="jf_granted"><di:waypoint x="2016" y="105"/><di:waypoint x="2086" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_declined" bpmnElement="jf_declined"><di:waypoint x="2016" y="105"/><di:waypoint x="2086" y="245"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_ref_out" bpmnElement="jf_ref_out"><di:waypoint x="2226" y="245"/><di:waypoint x="2296" y="223"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf6" bpmnElement="jf6"><di:waypoint x="2226" y="120"/><di:waypoint x="2296" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf7" bpmnElement="jf7"><di:waypoint x="2436" y="120"/><di:waypoint x="2506" y="98"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_err" bpmnElement="jf_err"><di:waypoint x="2454" y="160"/><di:waypoint x="60" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jf_err_out" bpmnElement="jf_err_out"><di:waypoint x="200" y="120"/><di:waypoint x="270" y="98"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jd1" bpmnElement="jd1"><di:waypoint x="141" y="519"/><di:waypoint x="211" y="541"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_jd2" bpmnElement="jd2"><di:waypoint x="351" y="541"/><di:waypoint x="421" y="519"/></bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>

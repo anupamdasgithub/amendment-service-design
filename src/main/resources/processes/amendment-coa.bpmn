@@ -4,45 +4,82 @@
                    xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                    xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:drools="http://www.jboss.org/drools"
                    id="_coa_defs"
                    targetNamespace="https://bank.com/bpmn/amendments"
                    exporter="Manual" exporterVersion="1.0">
 
   <bpmn2:itemDefinition id="_c_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
   <bpmn2:itemDefinition id="_c_itemString" structureRef="String"/>
-  <bpmn2:message id="_c_msg_evidence" name="CoaEvidenceSubmitted" itemRef="_c_itemString"/>
 
-  <bpmn2:process id="amendment-coa" name="Change of Address" isExecutable="true" processType="Public">
+  <bpmn2:error id="_c_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
 
-    <bpmn2:property id="item" itemSubjectRef="_c_itemItem" name="item"/>
-    <bpmn2:property id="requestId" itemSubjectRef="_c_itemString" name="requestId"/>
+
+  <bpmn2:process id="amendment_coa" name="Change of Address" isExecutable="true" processType="Public">
+
+    <bpmn2:property id="addressVerified"/>
+    <bpmn2:property id="accountId"/>
+    <bpmn2:property id="item" itemSubjectRef="_c_itemItem" name="item">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
+    <bpmn2:property id="requestId" itemSubjectRef="_c_itemString" name="requestId">
+      <bpmn2:extensionElements>
+        <drools:metaData name="customTags">
+          <drools:metaValue><![CDATA[input]]></drools:metaValue>
+        </drools:metaData>
+      </bpmn2:extensionElements>
+    </bpmn2:property>
 
     <bpmn2:startEvent id="c_start" name="Start"><bpmn2:outgoing>cf1</bpmn2:outgoing></bpmn2:startEvent>
 
-    <bpmn2:serviceTask id="c_validate" name="Validate and normalise address"
-                       implementation="##WebService" operationRef="_op_addr_validate">
+    <bpmn2:task id="c_validate" name="Validate and normalise address" drools:taskName="AddressValidationTask">
       <bpmn2:incoming>cf1</bpmn2:incoming><bpmn2:outgoing>cf2</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
 
-    <bpmn2:serviceTask id="c_verify" name="Third party address verification"
-                       implementation="##WebService" operationRef="_op_addr_verify">
+    <bpmn2:task id="c_verify" name="Third party address verification" drools:taskName="AddressVerificationTask">
       <bpmn2:incoming>cf2</bpmn2:incoming><bpmn2:outgoing>cf3</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
+
+    <bpmn2:task id="c_derive" name="Read verification result" drools:taskName="ReadItemDetailTask">
+      <bpmn2:incoming>cf3</bpmn2:incoming>
+      <bpmn2:outgoing>cf3b</bpmn2:outgoing>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_c_derive_item" name="item"/>
+        <bpmn2:dataOutput id="_do_c_derive_addressVerified" name="addressVerified"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_c_derive_item</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_c_derive_addressVerified</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_c_derive_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_c_derive_addressVerified</bpmn2:sourceRef>
+        <bpmn2:targetRef>addressVerified</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
 
     <bpmn2:exclusiveGateway id="c_gw_verified" name="Verified" gatewayDirection="Diverging">
-      <bpmn2:incoming>cf3</bpmn2:incoming>
+      <bpmn2:incoming>cf3b</bpmn2:incoming>
       <bpmn2:outgoing>cf_ok</bpmn2:outgoing>
       <bpmn2:outgoing>cf_evidence</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
 
-    <bpmn2:userTask id="c_evidence" name="Request proof of address">
+    <bpmn2:userTask id="c_evidence" name="Request proof of address" drools:taskName="RequestProofOfAddress">
       <bpmn2:incoming>cf_evidence</bpmn2:incoming><bpmn2:outgoing>cf_evidence_out</bpmn2:outgoing>
       <bpmn2:potentialOwner id="_c_po">
         <bpmn2:resourceAssignmentExpression id="_c_rae">
           <bpmn2:formalExpression>amendments-ops</bpmn2:formalExpression>
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
-      <bpmn2:boundaryEventRefs>c_evidence_timer</bpmn2:boundaryEventRefs>
     </bpmn2:userTask>
 
     <bpmn2:boundaryEvent id="c_evidence_timer" name="Evidence SLA" attachedToRef="c_evidence" cancelActivity="false">
@@ -52,10 +89,9 @@
       </bpmn2:timerEventDefinition>
     </bpmn2:boundaryEvent>
 
-    <bpmn2:serviceTask id="c_remind" name="Send evidence reminder"
-                       implementation="##WebService" operationRef="_op_notify">
+    <bpmn2:task id="c_remind" name="Send evidence reminder" drools:taskName="EvidenceReminderTask">
       <bpmn2:incoming>cf_timer</bpmn2:incoming><bpmn2:outgoing>cf_remind_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="c_remind_end"><bpmn2:incoming>cf_remind_out</bpmn2:incoming></bpmn2:endEvent>
 
     <bpmn2:exclusiveGateway id="c_gw_join" name="Join" gatewayDirection="Converging">
@@ -64,38 +100,68 @@
       <bpmn2:outgoing>cf4</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
 
-    <bpmn2:serviceTask id="c_tax" name="Assess tax residency impact"
-                       implementation="##WebService" operationRef="_op_tax">
+    <bpmn2:task id="c_tax" name="Assess tax residency impact" drools:taskName="TaxResidencyTask">
       <bpmn2:incoming>cf4</bpmn2:incoming><bpmn2:outgoing>cf5</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
 
-    <bpmn2:serviceTask id="c_apply" name="Apply address in core banking"
-                       implementation="##WebService" operationRef="_op_core_address">
+    <bpmn2:task id="c_apply" name="Apply address in core banking" drools:taskName="CoreBankingTask">
       <bpmn2:incoming>cf5</bpmn2:incoming><bpmn2:outgoing>cf6</bpmn2:outgoing>
-      <bpmn2:boundaryEventRefs>c_apply_error</bpmn2:boundaryEventRefs>
-    </bpmn2:serviceTask>
+    
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_c_apply_item" name="item"/>
+        <bpmn2:dataInput id="_di_c_apply_operation" name="operation"/>
+        <bpmn2:dataInput id="_di_c_apply_accountId" name="accountId"/>
+        <bpmn2:dataInput id="_di_c_apply_idempotencyKey" name="idempotencyKey"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_c_apply_item</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_c_apply_operation</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_c_apply_accountId</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_c_apply_idempotencyKey</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet/>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_c_apply_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:targetRef>_di_c_apply_operation</bpmn2:targetRef>
+        <bpmn2:assignment>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression"><![CDATA[APPLY_ADDRESS]]></bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_c_apply_operation]]></bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>accountId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_c_apply_accountId</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>requestId</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_c_apply_idempotencyKey</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+    </bpmn2:task>
 
     <bpmn2:boundaryEvent id="c_apply_error" name="Core failure" attachedToRef="c_apply" cancelActivity="true">
       <bpmn2:outgoing>cf_err</bpmn2:outgoing>
       <bpmn2:errorEventDefinition id="_c_eed" errorRef="_c_err"/>
     </bpmn2:boundaryEvent>
 
-    <bpmn2:serviceTask id="c_compensate" name="Record failure and refer"
-                       implementation="##WebService" operationRef="_op_fail">
+    <bpmn2:task id="c_compensate" name="Record failure and refer" drools:taskName="FailureRecordingTask">
       <bpmn2:incoming>cf_err</bpmn2:incoming><bpmn2:outgoing>cf_err_out</bpmn2:outgoing>
-    </bpmn2:serviceTask>
+    </bpmn2:task>
     <bpmn2:endEvent id="c_end_failed" name="Failed"><bpmn2:incoming>cf_err_out</bpmn2:incoming></bpmn2:endEvent>
 
     <bpmn2:endEvent id="c_end" name="Applied"><bpmn2:incoming>cf6</bpmn2:incoming></bpmn2:endEvent>
 
     <bpmn2:sequenceFlow id="cf1" sourceRef="c_start" targetRef="c_validate"/>
     <bpmn2:sequenceFlow id="cf2" sourceRef="c_validate" targetRef="c_verify"/>
-    <bpmn2:sequenceFlow id="cf3" sourceRef="c_verify" targetRef="c_gw_verified"/>
+    <bpmn2:sequenceFlow id="cf3" sourceRef="c_verify" targetRef="c_derive"/>
+    <bpmn2:sequenceFlow id="cf3b" sourceRef="c_derive" targetRef="c_gw_verified"/>
     <bpmn2:sequenceFlow id="cf_ok" sourceRef="c_gw_verified" targetRef="c_gw_join">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.coa.addressVerified = true</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">addressVerified = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="cf_evidence" sourceRef="c_gw_verified" targetRef="c_evidence">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">item.coa.addressVerified = false</bpmn2:conditionExpression>
+        <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">addressVerified = false</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="cf_evidence_out" sourceRef="c_evidence" targetRef="c_gw_join"/>
     <bpmn2:sequenceFlow id="cf_timer" sourceRef="c_evidence_timer" targetRef="c_remind"/>
@@ -106,20 +172,36 @@
     <bpmn2:sequenceFlow id="cf_err" sourceRef="c_apply_error" targetRef="c_compensate"/>
     <bpmn2:sequenceFlow id="cf_err_out" sourceRef="c_compensate" targetRef="c_end_failed"/>
   </bpmn2:process>
-
-  <bpmn2:error id="_c_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
-
-  <bpmndi:BPMNDiagram id="_c_diag">
-    <bpmndi:BPMNPlane id="_c_plane" bpmnElement="amendment-coa">
-      <bpmndi:BPMNShape id="_cs_start" bpmnElement="c_start"><dc:Bounds x="60" y="120" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_val" bpmnElement="c_validate"><dc:Bounds x="140" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_ver" bpmnElement="c_verify"><dc:Bounds x="300" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_gw" bpmnElement="c_gw_verified"><dc:Bounds x="460" y="118" width="40" height="40"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_ev" bpmnElement="c_evidence"><dc:Bounds x="540" y="200" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_join" bpmnElement="c_gw_join"><dc:Bounds x="700" y="118" width="40" height="40"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_tax" bpmnElement="c_tax"><dc:Bounds x="780" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_apply" bpmnElement="c_apply"><dc:Bounds x="940" y="98" width="120" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_cs_end" bpmnElement="c_end"><dc:Bounds x="1100" y="120" width="36" height="36"/></bpmndi:BPMNShape>
+  <bpmndi:BPMNDiagram id="diag_amendment_coa">
+    <bpmndi:BPMNPlane id="plane_amendment_coa" bpmnElement="amendment_coa">
+      <bpmndi:BPMNShape id="shape_c_compensate" bpmnElement="c_compensate"><dc:Bounds x="60" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_remind" bpmnElement="c_remind"><dc:Bounds x="60" y="205" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_start" bpmnElement="c_start"><dc:Bounds x="60" y="330" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_end_failed" bpmnElement="c_end_failed"><dc:Bounds x="270" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_remind_end" bpmnElement="c_remind_end"><dc:Bounds x="270" y="161" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_validate" bpmnElement="c_validate"><dc:Bounds x="270" y="242" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_verify" bpmnElement="c_verify"><dc:Bounds x="480" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_gw_verified" bpmnElement="c_gw_verified"><dc:Bounds x="690" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_evidence" bpmnElement="c_evidence"><dc:Bounds x="810" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_gw_join" bpmnElement="c_gw_join"><dc:Bounds x="1020" y="80" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_tax" bpmnElement="c_tax"><dc:Bounds x="1140" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_apply" bpmnElement="c_apply"><dc:Bounds x="1350" y="80" width="140" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_end" bpmnElement="c_end"><dc:Bounds x="1560" y="80" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_evidence_timer" bpmnElement="c_evidence_timer"><dc:Bounds x="932" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="shape_c_apply_error" bpmnElement="c_apply_error"><dc:Bounds x="1472" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="edge_cf1" bpmnElement="cf1"><di:waypoint x="96" y="348"/><di:waypoint x="270" y="282"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf2" bpmnElement="cf2"><di:waypoint x="410" y="282"/><di:waypoint x="480" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf3" bpmnElement="cf3"><di:waypoint x="620" y="120"/><di:waypoint x="690" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_ok" bpmnElement="cf_ok"><di:waypoint x="740" y="105"/><di:waypoint x="1020" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_evidence" bpmnElement="cf_evidence"><di:waypoint x="740" y="105"/><di:waypoint x="810" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_evidence_out" bpmnElement="cf_evidence_out"><di:waypoint x="950" y="120"/><di:waypoint x="1020" y="105"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_timer" bpmnElement="cf_timer"><di:waypoint x="968" y="160"/><di:waypoint x="60" y="245"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_remind_out" bpmnElement="cf_remind_out"><di:waypoint x="200" y="245"/><di:waypoint x="270" y="179"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf4" bpmnElement="cf4"><di:waypoint x="1070" y="105"/><di:waypoint x="1140" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf5" bpmnElement="cf5"><di:waypoint x="1280" y="120"/><di:waypoint x="1350" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf6" bpmnElement="cf6"><di:waypoint x="1490" y="120"/><di:waypoint x="1560" y="98"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_err" bpmnElement="cf_err"><di:waypoint x="1508" y="160"/><di:waypoint x="60" y="120"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="edge_cf_err_out" bpmnElement="cf_err_out"><di:waypoint x="200" y="120"/><di:waypoint x="270" y="98"/></bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>

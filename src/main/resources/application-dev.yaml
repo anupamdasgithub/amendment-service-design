@@ -3,25 +3,56 @@
 # The inner loop runs entirely on this machine: start the service, hit the
 # generated endpoints, iterate. No commit or pipeline needed to test a rule.
 #
-#   mvn spring-boot:run -Dspring-boot.run.profiles=dev
+#   docker compose up -d postgres
+#   mvn -Pcommunity -P'!bamoe' spring-boot:run -Dspring-boot.run.profiles=dev
 #
 # Rule change loop: edit the .dmn, rebuild, re-hit the endpoint. Reserve
 # commit and CI for promotion to shared environments.
+
+server:
+  # 8080 is taken by the BAMOE Maven repository container locally.
+  port: 8090
 
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/amendments_dev
     username: dev
     password: dev
+
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8180/realms/amendments
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: amendments-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 kogito:
+  addon:
+    cloudevents:
+      kafka:
+        kogito_incoming_stream: amendments-incoming
+        kogito_outgoing_stream: amendments-outgoing
+
+  # Data Index consumes these topics. The names are fixed by the service.
+  events:
+    processinstances:
+      enabled: true
+    usertasks:
+      enabled: true
+
   persistence:
     type: jdbc
+
   jobs-service:
     url: http://localhost:8580
 
