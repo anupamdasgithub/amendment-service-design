@@ -1,17 +1,11 @@
 {
   "info": {
+    "_postman_id": "cd0fef14-c7a7-4b41-8ca9-0063b328f743",
     "name": "Amendment Service",
     "description": "Customer-initiated account amendments — the generated Kogito process API.\n\nThe scenarios under 'Routing' are the point: identical requests differing in one field take different paths through the same process definition. Run them in order and watch the Console tab.\n\nSet {{baseUrl}} in the collection variables (default http://localhost:8090).\n\nInstance and task ids are captured automatically by the test scripts, so the follow-up requests work without copying ids by hand.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "36662669"
   },
-  "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8090" },
-    { "key": "requestInstanceId", "value": "" },
-    { "key": "coaInstanceId", "value": "" },
-    { "key": "conInstanceId", "value": "" },
-    { "key": "jtsInstanceId", "value": "" },
-    { "key": "taskId", "value": "" }
-  ],
   "item": [
     {
       "name": "Health",
@@ -20,15 +14,25 @@
           "name": "Service health",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator", "health"] },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
             "description": "UP means the service is running and connected to Postgres."
-          }
+          },
+          "response": []
         }
       ]
     },
     {
       "name": "Routing scenarios",
-      "description": "Each scenario differs from the others by one or two fields and takes a different path.",
       "item": [
         {
           "name": "1. Verified address — straight through",
@@ -51,14 +55,28 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requestId\": \"REQ-VERIFIED\",\n  \"amendmentType\": \"COA\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"DIGITAL\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\",\n  \"addressVerified\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "The address is already verified, so the CoA child skips the evidence branch and applies the change in core banking. The instance completes."
-          }
+          },
+          "response": []
         },
         {
           "name": "2. Unverified address — parks at a human task",
@@ -80,14 +98,28 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requestId\": \"REQ-UNVERIFIED\",\n  \"amendmentType\": \"COA\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"DIGITAL\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\",\n  \"addressVerified\": false\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "One field differs from scenario 1. The address is unverified, so the CoA child requests proof of address and the instance waits at a user task instead of completing."
-          }
+          },
+          "response": []
         },
         {
           "name": "3. Change of name — screening and approval",
@@ -107,68 +139,139 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requestId\": \"REQ-NAME\",\n  \"amendmentType\": \"CON\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\",\n  \"nameChangeReason\": \"MARRIAGE\",\n  \"rescreenOutcome\": \"CLEAR\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "The routing gateway sends this to the change of name child process. It collects evidence, re-screens under the new name, and requires maker-checker approval."
-          }
+          },
+          "response": []
         },
         {
           "name": "4. Name change with a screening hit",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requestId\": \"REQ-NAME-HIT\",\n  \"amendmentType\": \"CON\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\",\n  \"nameChangeReason\": \"DEED_POLL\",\n  \"rescreenOutcome\": \"CONFIRMED_HIT\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "Re-screening under the new name returns a hit, so the child routes to financial crime disposition before approval rather than straight to it."
-          }
+          },
+          "response": []
         },
         {
           "name": "5. Joint to sole — consent granted",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"requestId\": \"REQ-JTS\",\n  \"amendmentType\": \"JOINT_TO_SOLE\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": true,\n  \"riskBand\": \"LOW\",\n  \"allConsentsGranted\": true,\n  \"remainingPartyEligible\": true,\n  \"jointLiabilities\": false\n}"
+              "raw": "{\n  \"requestId\": \"REQ-JTS\",\n  \"amendmentType\": \"JOINT_TO_SOLE\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": true,\n  \"riskBand\": \"LOW\",\n  \"allConsentsGranted\": true,\n  \"remainingPartyEligible\": true,\n  \"jointLiabilities\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "A joint account converting to sole. Every departing party has consented, so the conversion proceeds to approval."
-          }
+          },
+          "response": []
         },
         {
           "name": "6. Joint to sole — party deceased, diverted",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"requestId\": \"REQ-JTS-BEREAVEMENT\",\n  \"amendmentType\": \"JOINT_TO_SOLE\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": true,\n  \"riskBand\": \"LOW\",\n  \"otherPartyStatus\": \"DECEASED\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "A party is deceased. The eligibility decision diverts this to the bereavement journey rather than processing it as a conversion — the behaviour ADR-001 specifies."
-          }
+          },
+          "response": []
         },
         {
           "name": "7. Multiple amendments in one request",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"requestId\": \"REQ-MULTI\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\",\n  \"includesCoa\": true,\n  \"includesCon\": true,\n  \"addressVerified\": true,\n  \"rescreenOutcome\": \"CLEAR\"\n}"
+              "raw": "{\n  \"requestId\": \"REQ-MULTI\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"BRANCH\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\",\n  \"includesCoa\": true,\n  \"includesCon\": true,\n  \"addressVerified\": true,\n  \"rescreenOutcome\": \"CLEAR\",\n  \"amendmentType\": \"COA\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "Address and name change in one request. The dispatch loop fans out to both child processes — one case, two amendments."
-          }
+          },
+          "response": []
         }
-      ]
+      ],
+      "description": "Each scenario differs from the others by one or two fields and takes a different path."
     },
     {
       "name": "Instances",
@@ -177,17 +280,38 @@
           "name": "List amendment requests",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/amendment_request", "host": ["{{baseUrl}}"], "path": ["amendment_request"] },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request"
+              ]
+            },
             "description": "Active parent instances. Completed ones are removed from the runtime store, so an empty list means everything finished."
-          }
+          },
+          "response": []
         },
         {
           "name": "Get one amendment request",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/amendment_request/{{requestInstanceId}}", "host": ["{{baseUrl}}"], "path": ["amendment_request", "{{requestInstanceId}}"] },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/amendment_request/{{requestInstanceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request",
+                "{{requestInstanceId}}"
+              ]
+            },
             "description": "The full case file for one instance: items, type-specific detail and routing flags."
-          }
+          },
+          "response": []
         },
         {
           "name": "List CoA instances",
@@ -210,9 +334,19 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/amendment_coa", "host": ["{{baseUrl}}"], "path": ["amendment_coa"] },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/amendment_coa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_coa"
+              ]
+            },
             "description": "Child instances for change of address. After scenario 2 one will be waiting here; after scenario 1 the list is empty because it completed."
-          }
+          },
+          "response": []
         },
         {
           "name": "List CoN instances",
@@ -230,8 +364,18 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/amendment_con", "host": ["{{baseUrl}}"], "path": ["amendment_con"] }
-          }
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/amendment_con",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_con"
+              ]
+            }
+          },
+          "response": []
         },
         {
           "name": "List joint-to-sole instances",
@@ -249,14 +393,23 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/amendment_joint_to_sole", "host": ["{{baseUrl}}"], "path": ["amendment_joint_to_sole"] }
-          }
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/amendment_joint_to_sole",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_joint_to_sole"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
       "name": "Human tasks",
-      "description": "Tasks are filtered by identity. The user parameter must match the task's assigned owner.",
       "item": [
         {
           "name": "List CoA tasks (amendments-ops)",
@@ -279,186 +432,442 @@
           ],
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/amendment_coa/{{coaInstanceId}}/tasks?user=amendments-ops",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_coa", "{{coaInstanceId}}", "tasks"],
-              "query": [{ "key": "user", "value": "amendments-ops" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_coa",
+                "{{coaInstanceId}}",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "amendments-ops"
+                }
+              ]
             },
             "description": "After scenario 2 this shows 'Request proof of address' in Ready state — an instance held at a human step because the data said evidence was needed."
-          }
+          },
+          "response": []
         },
         {
           "name": "Complete the proof of address task",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
             "url": {
               "raw": "{{baseUrl}}/amendment_coa/{{coaInstanceId}}/RequestProofOfAddress/{{taskId}}?user=amendments-ops",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_coa", "{{coaInstanceId}}", "RequestProofOfAddress", "{{taskId}}"],
-              "query": [{ "key": "user", "value": "amendments-ops" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_coa",
+                "{{coaInstanceId}}",
+                "RequestProofOfAddress",
+                "{{taskId}}"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "amendments-ops"
+                }
+              ]
             },
             "description": "Completing the task releases the instance, which then continues to tax residency and core banking."
-          }
+          },
+          "response": []
         },
         {
           "name": "List CoN tasks (amendments-checker)",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/amendment_con/{{conInstanceId}}/tasks?user=amendments-checker",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_con", "{{conInstanceId}}", "tasks"],
-              "query": [{ "key": "user", "value": "amendments-checker" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_con",
+                "{{conInstanceId}}",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "amendments-checker"
+                }
+              ]
             },
             "description": "Maker-checker approval on the change of name journey."
-          }
+          },
+          "response": []
         },
         {
           "name": "List CoN tasks (financial-crime)",
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/amendment_con/{{conInstanceId}}/tasks?user=financial-crime",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_con", "{{conInstanceId}}", "tasks"],
-              "query": [{ "key": "user", "value": "financial-crime" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_con",
+                "{{conInstanceId}}",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "financial-crime"
+                }
+              ]
             },
             "description": "Only populated when re-screening returned a hit — scenario 4."
-          }
+          },
+          "response": []
         },
         {
           "name": "List joint-to-sole tasks (underwriting)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const b = pm.response.json();",
+                  "if (b.length) {",
+                  "  pm.collectionVariables.set('taskId', b[0].id);",
+                  "  console.log('Underwriting task:', b[0].id);",
+                  "} else {",
+                  "  console.log('No underwriting task.');",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
           "request": {
             "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/amendment_joint_to_sole/{{jtsInstanceId}}/tasks?user=underwriting",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_joint_to_sole", "{{jtsInstanceId}}", "tasks"],
-              "query": [{ "key": "user", "value": "underwriting" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_joint_to_sole",
+                "{{jtsInstanceId}}",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "underwriting"
+                }
+              ]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete underwriting review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/amendment_joint_to_sole/{{jtsInstanceId}}/Underwriting_review/{{taskId}}?user=underwriting&phase=complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_joint_to_sole",
+                "{{jtsInstanceId}}",
+                "Underwriting_review",
+                "{{taskId}}"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "underwriting"
+                },
+                {
+                  "key": "phase",
+                  "value": "complete"
+                }
+              ]
+            }
+          },
+          "response": []
         }
-      ]
+      ],
+      "description": "Tasks are filtered by identity. The user parameter must match the task's assigned owner."
     },
     {
       "name": "Events",
-      "description": "Signals and messages the parent process listens for. These drive the event subprocesses.",
       "item": [
         {
           "name": "Signal SLA breached",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
             "url": {
               "raw": "{{baseUrl}}/amendment_request/{{requestInstanceId}}/SlaBreached",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_request", "{{requestInstanceId}}", "SlaBreached"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request",
+                "{{requestInstanceId}}",
+                "SlaBreached"
+              ]
             },
             "description": "Raises the SLA escalation event subprocess. The jobs service would normally signal this when the deadline passes."
-          }
+          },
+          "response": []
         },
         {
           "name": "Cancel the request",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
             "url": {
               "raw": "{{baseUrl}}/amendment_request/{{requestInstanceId}}/AmendmentCancelled",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_request", "{{requestInstanceId}}", "AmendmentCancelled"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request",
+                "{{requestInstanceId}}",
+                "AmendmentCancelled"
+              ]
             },
             "description": "Interrupting event subprocess: rolls back and terminates the request."
-          }
+          },
+          "response": []
         },
         {
           "name": "Abort an instance",
           "request": {
             "method": "DELETE",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/amendment_request/{{requestInstanceId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["amendment_request", "{{requestInstanceId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "amendment_request",
+                "{{requestInstanceId}}"
+              ]
             },
             "description": "Aborts the instance outright."
-          }
+          },
+          "response": []
         }
-      ]
+      ],
+      "description": "Signals and messages the parent process listens for. These drive the event subprocesses."
     },
     {
       "name": "Decisions",
-      "description": "The DMN models are exposed as standalone endpoints, so the rules can be exercised without running a process.",
       "item": [
         {
           "name": "Admissibility — permitted",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amendmentType\": \"COA\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"DIGITAL\",\n  \"screeningOutcome\": \"CLEAR\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/AmendmentAdmissibility", "host": ["{{baseUrl}}"], "path": ["AmendmentAdmissibility"] },
+            "url": {
+              "raw": "{{baseUrl}}/AmendmentAdmissibility",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "AmendmentAdmissibility"
+              ]
+            },
             "description": "Returns PERMITTED with reason code OK."
-          }
+          },
+          "response": []
         },
         {
           "name": "Admissibility — refused on a screening hit",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amendmentType\": \"COA\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": true,\n  \"mandatePermits\": true,\n  \"channel\": \"DIGITAL\",\n  \"screeningOutcome\": \"CONFIRMED_HIT\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/AmendmentAdmissibility", "host": ["{{baseUrl}}"], "path": ["AmendmentAdmissibility"] },
+            "url": {
+              "raw": "{{baseUrl}}/AmendmentAdmissibility",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "AmendmentAdmissibility"
+              ]
+            },
             "description": "Returns REFUSED with reason code SCREENING_HIT. Every refusal carries a reason code, which is what the customer sees and what the regulator asks about."
-          }
+          },
+          "response": []
         },
         {
           "name": "Admissibility — refused, requestor not a party",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"amendmentType\": \"COA\",\n  \"accountStatus\": \"ACTIVE\",\n  \"requestorIsParty\": false,\n  \"mandatePermits\": true,\n  \"channel\": \"DIGITAL\",\n  \"screeningOutcome\": \"CONFIRMED_HIT\",\n  \"inFlightAmendment\": false,\n  \"accountIsJoint\": false,\n  \"riskBand\": \"LOW\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/AmendmentAdmissibility", "host": ["{{baseUrl}}"], "path": ["AmendmentAdmissibility"] },
+            "url": {
+              "raw": "{{baseUrl}}/AmendmentAdmissibility",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "AmendmentAdmissibility"
+              ]
+            },
             "description": "Both the authority check and the screening check would refuse. The FIRST hit policy means authority wins, so the reason code is deterministic and auditable."
-          }
+          },
+          "response": []
         },
         {
           "name": "Joint to sole eligibility — deceased party",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"anyPartyDeceased\": true,\n  \"anyPartyIncapacitated\": false,\n  \"allConsentsGranted\": true,\n  \"jointLiabilities\": false,\n  \"overdraftBalance\": 0,\n  \"linkedProducts\": false,\n  \"remainingPartyEligible\": true\n}"
             },
-            "url": { "raw": "{{baseUrl}}/JointToSoleEligibility", "host": ["{{baseUrl}}"], "path": ["JointToSoleEligibility"] },
+            "url": {
+              "raw": "{{baseUrl}}/JointToSoleEligibility",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "JointToSoleEligibility"
+              ]
+            },
             "description": "Returns DIVERTED to BEREAVEMENT. A deceased party takes precedence over every other condition."
-          }
+          },
+          "response": []
         },
         {
           "name": "Sequencing — name change before conversion",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"permittedCount\": 2,\n  \"includesJointToSole\": true,\n  \"includesCon\": true,\n  \"includesCoa\": false\n}"
             },
-            "url": { "raw": "{{baseUrl}}/AmendmentSequencing", "host": ["{{baseUrl}}"], "path": ["AmendmentSequencing"] },
+            "url": {
+              "raw": "{{baseUrl}}/AmendmentSequencing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "AmendmentSequencing"
+              ]
+            },
             "description": "Returns SEQUENTIAL with the name change ordered before the conversion, so identity is settled before the account restructures."
-          }
+          },
+          "response": []
         }
-      ]
+      ],
+      "description": "The DMN models are exposed as standalone endpoints, so the rules can be exercised without running a process."
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8090"
+    },
+    {
+      "key": "requestInstanceId",
+      "value": ""
+    },
+    {
+      "key": "coaInstanceId",
+      "value": ""
+    },
+    {
+      "key": "conInstanceId",
+      "value": ""
+    },
+    {
+      "key": "jtsInstanceId",
+      "value": ""
+    },
+    {
+      "key": "taskId",
+      "value": ""
     }
   ]
 }
