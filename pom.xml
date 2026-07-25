@@ -146,10 +146,7 @@
         <dependency>
           <groupId>org.kie</groupId>
           <artifactId>kie-addons-springboot-events-process</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.kie.kogito</groupId>
-          <artifactId>kogito-addons-springboot-messaging</artifactId>
+          <version>${bamoe.version}</version>
         </dependency>
         <dependency>
           <groupId>org.kie</groupId>
@@ -235,7 +232,6 @@
             <executions>
               <execution>
                 <goals>
-                  <goal>process-model-files</goal>
                   <goal>generateModel</goal>
                 </goals>
               </execution>
@@ -350,9 +346,9 @@
             <extensions>true</extensions>
             <executions>
               <execution>
+                <id>kogito-generate</id>
+                <phase>generate-sources</phase>
                 <goals>
-                  <!-- 1.x goal name; the 9.x BAMOE plugin calls this process-model-files -->
-                  <goal>process-model-classes</goal>
                   <goal>generateModel</goal>
                 </goals>
               </execution>

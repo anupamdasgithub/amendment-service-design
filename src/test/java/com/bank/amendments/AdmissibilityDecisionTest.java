@@ -44,15 +44,15 @@ class AdmissibilityDecisionTest {
 
     private Map<String, Object> baseline() {
         Map<String, Object> in = new HashMap<>();
-        in.put("AmendmentType", "COA");
-        in.put("AccountStatus", "ACTIVE");
-        in.put("RequestorIsParty", true);
-        in.put("MandatePermits", true);
-        in.put("Channel", "DIGITAL");
-        in.put("ScreeningOutcome", "CLEAR");
-        in.put("InFlightAmendment", false);
-        in.put("AccountIsJoint", false);
-        in.put("RiskBand", "LOW");
+        in.put("amendmentType", "COA");
+        in.put("accountStatus", "ACTIVE");
+        in.put("requestorIsParty", true);
+        in.put("mandatePermits", true);
+        in.put("channel", "DIGITAL");
+        in.put("screeningOutcome", "CLEAR");
+        in.put("inFlightAmendment", false);
+        in.put("accountIsJoint", false);
+        in.put("riskBand", "LOW");
         return in;
     }
 
@@ -80,10 +80,10 @@ class AdmissibilityDecisionTest {
     @DisplayName("non-party requestor is refused before any other check")
     void nonPartyRequestorRefused() {
         Map<String, Object> in = baseline();
-        in.put("RequestorIsParty", false);
+        in.put("requestorIsParty", false);
         // Deliberately also set a screening hit: FIRST hit policy means the
         // authority refusal wins, giving a deterministic reason code.
-        in.put("ScreeningOutcome", "CONFIRMED_HIT");
+        in.put("screeningOutcome", "CONFIRMED_HIT");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REFUSED");
@@ -94,7 +94,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("insufficient mandate is refused")
     void insufficientMandateRefused() {
         Map<String, Object> in = baseline();
-        in.put("MandatePermits", false);
+        in.put("mandatePermits", false);
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REFUSED");
@@ -105,7 +105,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("confirmed screening hit is refused and referred")
     void screeningHitRefused() {
         Map<String, Object> in = baseline();
-        in.put("ScreeningOutcome", "CONFIRMED_HIT");
+        in.put("screeningOutcome", "CONFIRMED_HIT");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REFUSED");
@@ -116,7 +116,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("inconclusive screening routes to review, not refusal")
     void inconclusiveScreeningReviewed() {
         Map<String, Object> in = baseline();
-        in.put("ScreeningOutcome", "POTENTIAL_MATCH");
+        in.put("screeningOutcome", "POTENTIAL_MATCH");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REVIEW_REQUIRED");
@@ -127,7 +127,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("screening service unavailable routes to review, never auto-permits")
     void screeningUnavailableReviewed() {
         Map<String, Object> in = baseline();
-        in.put("ScreeningOutcome", "UNAVAILABLE");
+        in.put("screeningOutcome", "UNAVAILABLE");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REVIEW_REQUIRED");
@@ -137,7 +137,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("closed account cannot be amended")
     void closedAccountRefused() {
         Map<String, Object> in = baseline();
-        in.put("AccountStatus", "CLOSED");
+        in.put("accountStatus", "CLOSED");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REFUSED");
@@ -148,7 +148,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("dormant account routes to review rather than refusal")
     void dormantAccountReviewed() {
         Map<String, Object> in = baseline();
-        in.put("AccountStatus", "DORMANT");
+        in.put("accountStatus", "DORMANT");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REVIEW_REQUIRED");
@@ -159,7 +159,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("conflicting in-flight amendment is refused")
     void inFlightConflictRefused() {
         Map<String, Object> in = baseline();
-        in.put("InFlightAmendment", true);
+        in.put("inFlightAmendment", true);
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REFUSED");
@@ -170,8 +170,8 @@ class AdmissibilityDecisionTest {
     @DisplayName("joint to sole on a sole account is refused")
     void jointToSoleOnSoleAccountRefused() {
         Map<String, Object> in = baseline();
-        in.put("AmendmentType", "JOINT_TO_SOLE");
-        in.put("AccountIsJoint", false);
+        in.put("amendmentType", "JOINT_TO_SOLE");
+        in.put("accountIsJoint", false);
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REFUSED");
@@ -182,9 +182,9 @@ class AdmissibilityDecisionTest {
     @DisplayName("digital joint to sole requires assisted review")
     void digitalJointToSoleReviewed() {
         Map<String, Object> in = baseline();
-        in.put("AmendmentType", "JOINT_TO_SOLE");
-        in.put("AccountIsJoint", true);
-        in.put("Channel", "DIGITAL");
+        in.put("amendmentType", "JOINT_TO_SOLE");
+        in.put("accountIsJoint", true);
+        in.put("channel", "DIGITAL");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REVIEW_REQUIRED");
@@ -195,9 +195,9 @@ class AdmissibilityDecisionTest {
     @DisplayName("branch joint to sole on a low risk account is permitted")
     void branchJointToSolePermitted() {
         Map<String, Object> in = baseline();
-        in.put("AmendmentType", "JOINT_TO_SOLE");
-        in.put("AccountIsJoint", true);
-        in.put("Channel", "BRANCH");
+        in.put("amendmentType", "JOINT_TO_SOLE");
+        in.put("accountIsJoint", true);
+        in.put("channel", "BRANCH");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("PERMITTED");
@@ -207,7 +207,7 @@ class AdmissibilityDecisionTest {
     @DisplayName("high risk band requires review even when all else is clean")
     void highRiskReviewed() {
         Map<String, Object> in = baseline();
-        in.put("RiskBand", "HIGH");
+        in.put("riskBand", "HIGH");
 
         Map<String, Object> out = evaluate(in);
         assertThat(out.get("admissibility")).isEqualTo("REVIEW_REQUIRED");
@@ -219,7 +219,7 @@ class AdmissibilityDecisionTest {
     void everyOutcomeHasReasonCode() {
         for (String status : new String[]{"ACTIVE", "DORMANT", "FROZEN", "BLOCKED", "CLOSED"}) {
             Map<String, Object> in = baseline();
-            in.put("AccountStatus", status);
+            in.put("accountStatus", status);
             Map<String, Object> out = evaluate(in);
             assertThat(out.get("reasonCode")).as("reason code for %s", status).isNotNull();
             assertThat(out.get("reasonText")).as("reason text for %s", status).isNotNull();

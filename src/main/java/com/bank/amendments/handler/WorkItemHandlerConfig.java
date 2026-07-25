@@ -37,7 +37,8 @@ public class WorkItemHandlerConfig extends DefaultWorkItemHandlerConfig {
             "JourneyDiversionTask",
             "ConsentRequestTask",
             "ConsentExpiryTask",
-            "CompensationTask");
+            "CompensationTask",
+            "Receive Task");
 
     private final CoreBankingWorkItemHandler coreBanking;
     private final AsyncCoreBankingWorkItemHandler asyncCoreBanking;

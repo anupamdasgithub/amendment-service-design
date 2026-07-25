@@ -19,6 +19,7 @@ public class JointToSoleDetail {
     private boolean anyPartyIncapacitated;
     private boolean jointLiabilities;
     private BigDecimal outstandingBalance = BigDecimal.ZERO;
+    private boolean linkedProducts;
     private boolean remainingPartyEligible;
     private String eligibilityAssessmentRef;
     private boolean requiresUnderwriting;
@@ -47,6 +48,9 @@ public class JointToSoleDetail {
 
     public BigDecimal getOutstandingBalance() { return outstandingBalance; }
     public void setOutstandingBalance(BigDecimal v) { this.outstandingBalance = v; }
+
+    public boolean isLinkedProducts() { return linkedProducts; }
+    public void setLinkedProducts(boolean v) { this.linkedProducts = v; }
 
     public boolean isRemainingPartyEligible() { return remainingPartyEligible; }
     public void setRemainingPartyEligible(boolean v) { this.remainingPartyEligible = v; }

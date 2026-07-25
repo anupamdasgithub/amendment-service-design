@@ -20,6 +20,13 @@
   <bpmn2:process id="amendment_joint_to_sole" name="Joint to Sole Conversion" isExecutable="true" processType="Public">
 
     <bpmn2:property id="allConsentsGranted"/>
+    <bpmn2:property id="AnyPartyDeceased"/>
+    <bpmn2:property id="AnyPartyIncapacitated"/>
+    <bpmn2:property id="AllConsentsGrantedVar"/>
+    <bpmn2:property id="JointLiabilities"/>
+    <bpmn2:property id="OverdraftBalance"/>
+    <bpmn2:property id="LinkedProducts"/>
+    <bpmn2:property id="RemainingPartyEligible"/>
     <bpmn2:property id="jtsDiverted"/>
     <bpmn2:property id="jtsReviewRequired"/>
     <bpmn2:property id="jtsEligible"/>
@@ -42,7 +49,61 @@
 
     <bpmn2:startEvent id="j_start" name="Start"><bpmn2:outgoing>jf1</bpmn2:outgoing></bpmn2:startEvent>
 
-    <bpmn2:task id="j_parties" name="Resolve parties and liabilities" drools:taskName="PartyResolutionTask">
+    <bpmn2:task id="j_parties" name="Resolve parties and liabilities" drools:taskName="ReadItemDetailTask">
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_j_parties_item" name="item"/>
+        <bpmn2:dataOutput id="_do_j_parties_apd" name="AnyPartyDeceased"/>
+        <bpmn2:dataOutput id="_do_j_parties_api" name="AnyPartyIncapacitated"/>
+        <bpmn2:dataOutput id="_do_j_parties_acg" name="AllConsentsGranted"/>
+        <bpmn2:dataOutput id="_do_j_parties_jl" name="JointLiabilities"/>
+        <bpmn2:dataOutput id="_do_j_parties_ob" name="OverdraftBalance"/>
+        <bpmn2:dataOutput id="_do_j_parties_lp" name="LinkedProducts"/>
+        <bpmn2:dataOutput id="_do_j_parties_rpe" name="RemainingPartyEligible"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_j_parties_item</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_j_parties_apd</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_parties_api</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_parties_acg</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_parties_jl</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_parties_ob</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_parties_lp</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_j_parties_rpe</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_parties_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_apd</bpmn2:sourceRef>
+        <bpmn2:targetRef>AnyPartyDeceased</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_api</bpmn2:sourceRef>
+        <bpmn2:targetRef>AnyPartyIncapacitated</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_acg</bpmn2:sourceRef>
+        <bpmn2:targetRef>AllConsentsGrantedVar</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_jl</bpmn2:sourceRef>
+        <bpmn2:targetRef>JointLiabilities</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_ob</bpmn2:sourceRef>
+        <bpmn2:targetRef>OverdraftBalance</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_lp</bpmn2:sourceRef>
+        <bpmn2:targetRef>LinkedProducts</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_parties_rpe</bpmn2:sourceRef>
+        <bpmn2:targetRef>RemainingPartyEligible</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
       <bpmn2:incoming>jf1</bpmn2:incoming><bpmn2:outgoing>jf2</bpmn2:outgoing>
     </bpmn2:task>
 
@@ -52,12 +113,29 @@
         <bpmn2:dataInput id="_di_j_eligibility_0" name="namespace"/>
         <bpmn2:dataInput id="_di_j_eligibility_1" name="model"/>
         <bpmn2:dataInput id="_di_j_eligibility_2" name="decision"/>
+        <bpmn2:dataInput id="_di_j_eligibility_3" name="AnyPartyDeceased"/>
+        <bpmn2:dataInput id="_di_j_eligibility_4" name="AnyPartyIncapacitated"/>
+        <bpmn2:dataInput id="_di_j_eligibility_5" name="AllConsentsGranted"/>
+        <bpmn2:dataInput id="_di_j_eligibility_6" name="JointLiabilities"/>
+        <bpmn2:dataInput id="_di_j_eligibility_7" name="OverdraftBalance"/>
+        <bpmn2:dataInput id="_di_j_eligibility_8" name="LinkedProducts"/>
+        <bpmn2:dataInput id="_di_j_eligibility_9" name="RemainingPartyEligible"/>
         <bpmn2:inputSet>
           <bpmn2:dataInputRefs>_di_j_eligibility_0</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_di_j_eligibility_1</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_di_j_eligibility_2</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_3</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_4</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_5</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_6</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_7</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_8</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_j_eligibility_9</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
-        <bpmn2:outputSet/>
+        <bpmn2:dataOutput id="_do_j_eligibility_result" name="JtsEligibility"/>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_j_eligibility_result</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
       </bpmn2:ioSpecification>
       <bpmn2:dataInputAssociation>
         <bpmn2:targetRef>_di_j_eligibility_0</bpmn2:targetRef>
@@ -80,11 +158,83 @@
           <bpmn2:to xsi:type="bpmn2:tFormalExpression"><![CDATA[_di_j_eligibility_2]]></bpmn2:to>
         </bpmn2:assignment>
       </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>AnyPartyDeceased</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_3</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>AnyPartyIncapacitated</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_4</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>AllConsentsGrantedVar</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_5</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>JointLiabilities</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_6</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>OverdraftBalance</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_7</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>LinkedProducts</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_8</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>RemainingPartyEligible</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_j_eligibility_9</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_j_eligibility_result</bpmn2:sourceRef>
+        <bpmn2:targetRef>JtsEligibility</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
       <bpmn2:incoming>jf2</bpmn2:incoming><bpmn2:outgoing>jf3</bpmn2:outgoing>
     </bpmn2:businessRuleTask>
 
+    <bpmn2:task id="j_derive_elig" name="Flatten eligibility outcome" drools:taskName="ReadItemDetailTask">
+      <bpmn2:incoming>jf3</bpmn2:incoming><bpmn2:outgoing>jf3b</bpmn2:outgoing>
+      <bpmn2:ioSpecification>
+        <bpmn2:dataInput id="_di_je_item" name="item"/>
+        <bpmn2:dataInput id="_di_je_elig" name="JtsEligibility"/>
+        <bpmn2:dataOutput id="_do_je_jtsDiverted" name="jtsDiverted"/>
+        <bpmn2:dataOutput id="_do_je_jtsReviewRequired" name="jtsReviewRequired"/>
+        <bpmn2:dataOutput id="_do_je_jtsEligible" name="jtsEligible"/>
+        <bpmn2:inputSet>
+          <bpmn2:dataInputRefs>_di_je_item</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>_di_je_elig</bpmn2:dataInputRefs>
+        </bpmn2:inputSet>
+        <bpmn2:outputSet>
+          <bpmn2:dataOutputRefs>_do_je_jtsDiverted</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_je_jtsReviewRequired</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>_do_je_jtsEligible</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
+      </bpmn2:ioSpecification>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>item</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_je_item</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation>
+        <bpmn2:sourceRef>JtsEligibility</bpmn2:sourceRef>
+        <bpmn2:targetRef>_di_je_elig</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_je_jtsDiverted</bpmn2:sourceRef>
+        <bpmn2:targetRef>jtsDiverted</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_je_jtsReviewRequired</bpmn2:sourceRef>
+        <bpmn2:targetRef>jtsReviewRequired</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation>
+        <bpmn2:sourceRef>_do_je_jtsEligible</bpmn2:sourceRef>
+        <bpmn2:targetRef>jtsEligible</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+    </bpmn2:task>
+
     <bpmn2:exclusiveGateway id="j_gw_elig" name="Eligibility outcome" gatewayDirection="Diverging">
-      <bpmn2:incoming>jf3</bpmn2:incoming>
+      <bpmn2:incoming>jf3b</bpmn2:incoming>
       <bpmn2:outgoing>jf_divert</bpmn2:outgoing>
       <bpmn2:outgoing>jf_review</bpmn2:outgoing>
       <bpmn2:outgoing>jf_consent</bpmn2:outgoing>
@@ -280,7 +430,8 @@
 
     <bpmn2:sequenceFlow id="jf1" sourceRef="j_start" targetRef="j_parties"/>
     <bpmn2:sequenceFlow id="jf2" sourceRef="j_parties" targetRef="j_eligibility"/>
-    <bpmn2:sequenceFlow id="jf3" sourceRef="j_eligibility" targetRef="j_gw_elig"/>
+    <bpmn2:sequenceFlow id="jf3" sourceRef="j_eligibility" targetRef="j_derive_elig"/>
+    <bpmn2:sequenceFlow id="jf3b" sourceRef="j_derive_elig" targetRef="j_gw_elig"/>
     <bpmn2:sequenceFlow id="jf_divert" sourceRef="j_gw_elig" targetRef="j_divert">
         <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression" language="http://www.omg.org/spec/FEEL/20140401">jtsDiverted = true</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>

@@ -37,6 +37,13 @@ public class ReadItemDetailWorkItemHandler implements KogitoWorkItemHandler {
         String rescreenOutcome = "CLEAR";
         boolean allConsentsGranted = false;
 
+        boolean anyPartyDeceased = false;
+        boolean anyPartyIncapacitated = false;
+        boolean jointLiabilities = false;
+        java.math.BigDecimal overdraftBalance = java.math.BigDecimal.ZERO;
+        boolean linkedProducts = false;
+        boolean remainingPartyEligible = false;
+
         if (raw instanceof AmendmentItem item) {
             if (item.getType() != null) {
                 itemType = item.getType().name();
@@ -49,7 +56,14 @@ public class ReadItemDetailWorkItemHandler implements KogitoWorkItemHandler {
                 rescreenOutcome = item.getCon().getRescreenResult().getOutcome().name();
             }
             if (item.getJointToSole() != null) {
-                allConsentsGranted = item.getJointToSole().isAllConsentsGranted();
+                var jts = item.getJointToSole();
+                allConsentsGranted = jts.isAllConsentsGranted();
+                anyPartyDeceased = jts.isAnyPartyDeceased();
+                anyPartyIncapacitated = jts.isAnyPartyIncapacitated();
+                jointLiabilities = jts.isJointLiabilities();
+                overdraftBalance = jts.getOutstandingBalance();
+                linkedProducts = jts.isLinkedProducts();
+                remainingPartyEligible = jts.isRemainingPartyEligible();
             }
         } else if (raw != null) {
             log.warn("Expected an AmendmentItem but received {}", raw.getClass().getName());
@@ -81,6 +95,13 @@ public class ReadItemDetailWorkItemHandler implements KogitoWorkItemHandler {
         results.put("rescreenOutcome", rescreenOutcome);
         results.put("rescreenClear", "CLEAR".equals(rescreenOutcome));
         results.put("allConsentsGranted", allConsentsGranted);
+        results.put("AnyPartyDeceased", anyPartyDeceased);
+        results.put("AnyPartyIncapacitated", anyPartyIncapacitated);
+        results.put("AllConsentsGranted", allConsentsGranted);
+        results.put("JointLiabilities", jointLiabilities);
+        results.put("OverdraftBalance", overdraftBalance);
+        results.put("LinkedProducts", linkedProducts);
+        results.put("RemainingPartyEligible", remainingPartyEligible);
         manager.completeWorkItem(workItem.getStringId(), results);
     }
 

@@ -42,10 +42,10 @@ class SequencingDecisionTest {
 
     private Map<String, Object> evaluate(int count, boolean jts, boolean con, boolean coa) {
         Map<String, Object> in = new HashMap<>();
-        in.put("PermittedCount", count);
-        in.put("IncludesJointToSole", jts);
-        in.put("IncludesCon", con);
-        in.put("IncludesCoa", coa);
+        in.put("permittedCount", count);
+        in.put("includesJointToSole", jts);
+        in.put("includesCon", con);
+        in.put("includesCoa", coa);
 
         DMNContext context = runtime.newContext();
         in.forEach(context::set);
