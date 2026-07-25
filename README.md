@@ -144,6 +144,37 @@ curl -X POST http://localhost:8090/amendment_request \
        "accountIsJoint":false,"riskBand":"LOW","addressVerified":true}'
 ```
 
+## Generated API
+
+There are no hand-written controllers in this service. The REST API is
+generated from the process and decision models at build time by the
+`kogito-maven-plugin`, which runs during `mvn package` (bound to the
+`generate-sources` phase). The plugin reads every `.bpmn` and `.dmn` under
+`src/main/resources/` and emits Java sources into
+`target/generated-sources/kogito/`:
+
+- A BPMN process becomes a `*Process.java` (the executable process) and a
+  `*Resource.java` — a Spring `@RestController` whose `@PostMapping` and
+  `@GetMapping` methods are the API endpoints — together with typed task
+  model classes.
+- A DMN model becomes a `*Resource.java` decision endpoint plus its
+  input and output types.
+
+Because the endpoints are derived from the models, the shape of a model
+determines the shape of the API. In particular, a human-task path segment is
+taken from the BPMN node **name** (spaces replaced by underscores), not from
+its `drools:taskName`. This is why the node "Request proof of address" is
+completed at `/amendment_coa/{id}/Request_proof_of_address/{taskId}`: renaming
+the node would change the URL. To change the API, change the source model and
+rebuild — never edit generated code, which is overwritten on every build.
+
+A read-only snapshot of the generated sources is checked in under
+`docs/generated-sources-docs/` so the generated API surface can be reviewed on
+GitHub without building the project. It is a point-in-time copy; the
+authoritative output is always what `mvn package` regenerates from the current
+models. See `docs/generated-sources-docs/README.md` for the layout and the
+regeneration command.
+
 ## Persistence model
 
 Two stores, deliberately separate:

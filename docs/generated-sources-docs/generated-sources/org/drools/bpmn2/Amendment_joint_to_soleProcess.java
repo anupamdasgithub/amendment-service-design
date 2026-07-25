@@ -1,0 +1,430 @@
+package org.drools.bpmn2;
+
+import org.drools.bpmn2.Amendment_joint_to_soleModel;
+import org.kie.api.definition.process.Process;
+import org.jbpm.ruleflow.core.RuleFlowProcessFactory;
+import org.jbpm.process.core.datatype.impl.type.ObjectDataType;
+import org.drools.core.util.KieFunctions;
+import org.jbpm.process.core.datatype.impl.type.UndefinedDataType;
+import org.jbpm.process.core.datatype.impl.type.StringDataType;
+
+@org.springframework.stereotype.Component("amendment_joint_to_sole")
+public class Amendment_joint_to_soleProcess extends org.kie.kogito.process.impl.AbstractProcess<org.drools.bpmn2.Amendment_joint_to_soleModel> {
+
+    @org.springframework.beans.factory.annotation.Autowired()
+    public Amendment_joint_to_soleProcess(org.kie.kogito.app.Application app, org.kie.kogito.correlation.CorrelationService correlations) {
+        super(app, java.util.Arrays.asList(), correlations);
+        activate();
+    }
+
+    public Amendment_joint_to_soleProcess() {
+    }
+
+    @Override()
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createInstance(org.drools.bpmn2.Amendment_joint_to_soleModel value) {
+        return new org.drools.bpmn2.Amendment_joint_to_soleProcessInstance(this, value, this.createProcessRuntime());
+    }
+
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createInstance(java.lang.String businessKey, org.drools.bpmn2.Amendment_joint_to_soleModel value) {
+        return new org.drools.bpmn2.Amendment_joint_to_soleProcessInstance(this, value, businessKey, this.createProcessRuntime());
+    }
+
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createInstance(java.lang.String businessKey, org.kie.kogito.correlation.CompositeCorrelation correlation, org.drools.bpmn2.Amendment_joint_to_soleModel value) {
+        return new org.drools.bpmn2.Amendment_joint_to_soleProcessInstance(this, value, businessKey, this.createProcessRuntime(), correlation);
+    }
+
+    @Override()
+    public org.drools.bpmn2.Amendment_joint_to_soleModel createModel() {
+        return new org.drools.bpmn2.Amendment_joint_to_soleModel();
+    }
+
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createInstance(org.kie.kogito.Model value) {
+        return this.createInstance((org.drools.bpmn2.Amendment_joint_to_soleModel) value);
+    }
+
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createInstance(java.lang.String businessKey, org.kie.kogito.Model value) {
+        return this.createInstance(businessKey, (org.drools.bpmn2.Amendment_joint_to_soleModel) value);
+    }
+
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createInstance(org.kie.api.runtime.process.WorkflowProcessInstance wpi) {
+        return new org.drools.bpmn2.Amendment_joint_to_soleProcessInstance(this, this.createModel(), this.createProcessRuntime(), wpi);
+    }
+
+    public org.drools.bpmn2.Amendment_joint_to_soleProcessInstance createReadOnlyInstance(org.kie.api.runtime.process.WorkflowProcessInstance wpi) {
+        return new org.drools.bpmn2.Amendment_joint_to_soleProcessInstance(this, this.createModel(), wpi);
+    }
+
+    protected org.kie.api.definition.process.Process process() {
+        RuleFlowProcessFactory factory = RuleFlowProcessFactory.createProcess("amendment_joint_to_sole", true);
+        factory.variable("allConsentsGranted", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.Object.class), null, "customTags", null);
+        factory.variable("jtsDiverted", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.Object.class), null, "customTags", null);
+        factory.variable("jtsReviewRequired", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.Object.class), null, "customTags", null);
+        factory.variable("jtsEligible", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.Object.class), null, "customTags", null);
+        factory.variable("JtsEligibility", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.Object.class), null, "customTags", null);
+        factory.variable("accountId", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.Object.class), null, "customTags", null);
+        factory.variable("item", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(com.bank.amendments.model.AmendmentItem.class), null, "customTags", "input");
+        factory.variable("requestId", org.jbpm.process.core.datatype.DataTypeResolver.fromClass(java.lang.String.class), null, "customTags", "input");
+        factory.name("Joint to Sole Conversion");
+        factory.packageName("org.drools.bpmn2");
+        factory.dynamic(false);
+        factory.version("1.0");
+        factory.type("BPMN");
+        factory.visibility("Public");
+        factory.metaData("TargetNamespace", "https://bank.com/bpmn/amendments");
+        org.jbpm.ruleflow.core.factory.StartNodeFactory<?> startNode1 = factory.startNode(1);
+        startNode1.name("Start");
+        startNode1.interrupting(false);
+        startNode1.metaData("UniqueId", "j_start");
+        startNode1.metaData("x", 60);
+        startNode1.metaData("width", 36);
+        startNode1.metaData("y", 205);
+        startNode1.metaData("height", 36);
+        startNode1.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode2 = factory.workItemNode(2);
+        workItemNode2.name("Resolve parties and liabilities");
+        workItemNode2.workName("PartyResolutionTask");
+        workItemNode2.workParameter("NodeName", "Resolve parties and liabilities");
+        workItemNode2.done();
+        workItemNode2.metaData("UniqueId", "j_parties");
+        workItemNode2.metaData("x", 270);
+        workItemNode2.metaData("width", 140);
+        workItemNode2.metaData("y", 161);
+        workItemNode2.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.RuleSetNodeFactory<?> ruleSetNode3 = factory.ruleSetNode(3);
+        ruleSetNode3.name("Assess conversion eligibility");
+        ruleSetNode3.decision("https://bank.com/dmn/amendments", "JointToSoleEligibility", null, () -> {
+            return app.get(org.kie.kogito.decision.DecisionModels.class).getDecisionModel("https://bank.com/dmn/amendments", "JointToSoleEligibility");
+        });
+        ruleSetNode3.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_eligibility_0", "namespace", "java.lang.Object", null), java.util.Arrays.asList(new org.jbpm.workflow.core.node.Assignment(null, new org.jbpm.workflow.core.impl.DataDefinition("33073c89-21ac-44f3-8e6b-bf4fe1b4d164", "EXPRESSION (https://bank.com/dmn/amendments)", "java.lang.Object", "https://bank.com/dmn/amendments"), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_eligibility_0", "namespace", "java.lang.Object", null))), null));
+        ruleSetNode3.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_eligibility_1", "model", "java.lang.Object", null), java.util.Arrays.asList(new org.jbpm.workflow.core.node.Assignment(null, new org.jbpm.workflow.core.impl.DataDefinition("852388a2-da61-4ff0-8cca-ad9010009ff1", "EXPRESSION (JointToSoleEligibility)", "java.lang.Object", "JointToSoleEligibility"), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_eligibility_1", "model", "java.lang.Object", null))), null));
+        ruleSetNode3.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_eligibility_2", "decision", "java.lang.Object", null), java.util.Arrays.asList(new org.jbpm.workflow.core.node.Assignment(null, new org.jbpm.workflow.core.impl.DataDefinition("JtsEligibility", "JtsEligibility", "java.lang.Object", null), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_eligibility_2", "decision", "java.lang.Object", null))), null));
+        ruleSetNode3.metaData("UniqueId", "j_eligibility");
+        ruleSetNode3.metaData("x", 480);
+        ruleSetNode3.metaData("width", 140);
+        ruleSetNode3.metaData("y", 80);
+        ruleSetNode3.metaData("height", 80);
+        ruleSetNode3.done();
+        org.jbpm.ruleflow.core.factory.SplitFactory<?> splitNode4 = factory.splitNode(4);
+        splitNode4.name("Eligibility outcome");
+        splitNode4.type(2);
+        splitNode4.metaData("UniqueId", "j_gw_elig");
+        splitNode4.metaData("x", 690);
+        splitNode4.metaData("width", 50);
+        splitNode4.metaData("y", 80);
+        splitNode4.metaData("Default", null);
+        splitNode4.metaData("height", 50);
+        splitNode4.constraint(7, "jf_review", "DROOLS_DEFAULT", "FEEL", new org.jbpm.bpmn2.feel.FeelReturnValueEvaluator("jtsReviewRequired = true"), 0, false);
+        splitNode4.constraint(5, "jf_divert", "DROOLS_DEFAULT", "FEEL", new org.jbpm.bpmn2.feel.FeelReturnValueEvaluator("jtsDiverted = true"), 0, false);
+        splitNode4.constraint(8, "jf_consent", "DROOLS_DEFAULT", "FEEL", new org.jbpm.bpmn2.feel.FeelReturnValueEvaluator("jtsEligible = true"), 0, false);
+        splitNode4.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode5 = factory.workItemNode(5);
+        workItemNode5.name("Divert to specialist journey");
+        workItemNode5.workName("JourneyDiversionTask");
+        workItemNode5.workParameter("NodeName", "Divert to specialist journey");
+        workItemNode5.done();
+        workItemNode5.metaData("UniqueId", "j_divert");
+        workItemNode5.metaData("x", 810);
+        workItemNode5.metaData("width", 140);
+        workItemNode5.metaData("y", 80);
+        workItemNode5.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode6 = factory.endNode(6);
+        endNode6.name("Diverted");
+        endNode6.terminate(false);
+        endNode6.metaData("UniqueId", "j_end_divert");
+        endNode6.metaData("x", 1020);
+        endNode6.metaData("width", 36);
+        endNode6.metaData("y", 80);
+        endNode6.metaData("height", 36);
+        endNode6.done();
+        org.jbpm.ruleflow.core.factory.HumanTaskNodeFactory<?> humanTaskNode7 = factory.humanTaskNode(7);
+        humanTaskNode7.name("Underwriting review");
+        humanTaskNode7.workParameter("NodeName", "Underwriting review");
+        humanTaskNode7.workParameter("ActorId", "underwriting");
+        humanTaskNode7.done();
+        humanTaskNode7.metaData("UniqueId", "j_review");
+        humanTaskNode7.metaData("x", 810);
+        humanTaskNode7.metaData("width", 140);
+        humanTaskNode7.metaData("y", 205);
+        humanTaskNode7.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.JoinFactory<?> joinNode8 = factory.joinNode(8);
+        joinNode8.name("Proceed to consent");
+        joinNode8.type(2);
+        joinNode8.metaData("UniqueId", "j_gw_consent_join");
+        joinNode8.metaData("x", 1020);
+        joinNode8.metaData("width", 50);
+        joinNode8.metaData("y", 161);
+        joinNode8.metaData("height", 50);
+        joinNode8.done();
+        org.jbpm.ruleflow.core.factory.CompositeContextNodeFactory<?> compositeContextNode9 = factory.compositeContextNode(9);
+        compositeContextNode9.name("Collect party consent");
+        compositeContextNode9.metaData("UniqueId", "j_consent_loop");
+        compositeContextNode9.metaData("x", 1140);
+        compositeContextNode9.metaData("width", 756);
+        compositeContextNode9.metaData("y", 80);
+        compositeContextNode9.metaData("height", 251);
+        compositeContextNode9.autoComplete(true);
+        org.jbpm.ruleflow.core.factory.StartNodeFactory<?> startNode10 = compositeContextNode9.startNode(10);
+        startNode10.name("Start");
+        startNode10.interrupting(false);
+        startNode10.metaData("UniqueId", "j_c_start");
+        startNode10.metaData("x", 45);
+        startNode10.metaData("width", 36);
+        startNode10.metaData("y", 185);
+        startNode10.metaData("height", 36);
+        startNode10.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode11 = compositeContextNode9.workItemNode(11);
+        workItemNode11.name("Request consent from party");
+        workItemNode11.workName("ConsentRequestTask");
+        workItemNode11.workParameter("NodeName", "Request consent from party");
+        workItemNode11.done();
+        workItemNode11.metaData("UniqueId", "j_c_request");
+        workItemNode11.metaData("x", 255);
+        workItemNode11.metaData("width", 140);
+        workItemNode11.metaData("y", 141);
+        workItemNode11.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode12 = compositeContextNode9.workItemNode(12);
+        workItemNode12.name("Await consent response");
+        workItemNode12.workName("Receive Task");
+        workItemNode12.workParameter("NodeName", "Await consent response");
+        workItemNode12.workParameter("MessageId", "_j_msg_consent");
+        workItemNode12.workParameter("MessageType", "String");
+        workItemNode12.mapDataOutputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_c_wait", "_do_j_c_wait", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("requestId", "requestId", "java.lang.Object", null), null, null));
+        workItemNode12.done();
+        workItemNode12.metaData("UniqueId", "j_c_wait");
+        workItemNode12.metaData("x", 465);
+        workItemNode12.metaData("width", 140);
+        workItemNode12.metaData("y", 60);
+        workItemNode12.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.BoundaryEventNodeFactory<?> boundaryEventNode13 = compositeContextNode9.boundaryEventNode(13);
+        boundaryEventNode13.name("Consent expiry");
+        boundaryEventNode13.eventType("Timer-j_c_wait-PT336H-13");
+        boundaryEventNode13.attachedTo("j_c_wait");
+        boundaryEventNode13.scope(null);
+        boundaryEventNode13.metaData("UniqueId", "j_c_expiry");
+        boundaryEventNode13.metaData("EventType", "timer");
+        boundaryEventNode13.metaData("x", 587);
+        boundaryEventNode13.metaData("width", 36);
+        boundaryEventNode13.metaData("y", 122);
+        boundaryEventNode13.metaData("AttachedTo", "j_c_wait");
+        boundaryEventNode13.metaData("TimeDuration", "PT336H");
+        boundaryEventNode13.metaData("CancelActivity", true);
+        boundaryEventNode13.metaData("height", 36);
+        boundaryEventNode13.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode14 = compositeContextNode9.workItemNode(14);
+        workItemNode14.name("Mark consent expired");
+        workItemNode14.workName("ConsentExpiryTask");
+        workItemNode14.workParameter("NodeName", "Mark consent expired");
+        workItemNode14.done();
+        workItemNode14.metaData("UniqueId", "j_c_expire");
+        workItemNode14.metaData("x", 45);
+        workItemNode14.metaData("width", 140);
+        workItemNode14.metaData("y", 60);
+        workItemNode14.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode15 = compositeContextNode9.endNode(15);
+        endNode15.name("End");
+        endNode15.terminate(false);
+        endNode15.metaData("UniqueId", "j_c_end_exp");
+        endNode15.metaData("x", 255);
+        endNode15.metaData("width", 36);
+        endNode15.metaData("y", 60);
+        endNode15.metaData("height", 36);
+        endNode15.done();
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode16 = compositeContextNode9.endNode(16);
+        endNode16.name("End");
+        endNode16.terminate(false);
+        endNode16.metaData("UniqueId", "j_c_end");
+        endNode16.metaData("x", 675);
+        endNode16.metaData("width", 36);
+        endNode16.metaData("y", 60);
+        endNode16.metaData("height", 36);
+        endNode16.done();
+        compositeContextNode9.connection(10, 11, "jc1");
+        compositeContextNode9.connection(11, 12, "jc2");
+        compositeContextNode9.connection(13, 14, "jc_exp");
+        compositeContextNode9.connection(14, 15, "jc_exp_out");
+        compositeContextNode9.connection(12, 16, "jc3");
+        compositeContextNode9.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode17 = factory.workItemNode(17);
+        workItemNode17.name("Read consent status");
+        workItemNode17.workName("ReadItemDetailTask");
+        workItemNode17.workParameter("NodeName", "Read consent status");
+        workItemNode17.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("item", "item", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_derive_item", "item", "java.lang.Object", null), null, null));
+        workItemNode17.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("JtsEligibility", "JtsEligibility", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_derive_elig", "JtsEligibility", "java.lang.Object", null), null, null));
+        workItemNode17.mapDataOutputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_derive_allConsentsGranted", "allConsentsGranted", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("allConsentsGranted", "allConsentsGranted", "java.lang.Object", null), null, null));
+        workItemNode17.mapDataOutputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_derive_jtsDiverted", "jtsDiverted", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("jtsDiverted", "jtsDiverted", "java.lang.Object", null), null, null));
+        workItemNode17.mapDataOutputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_derive_jtsReviewRequired", "jtsReviewRequired", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("jtsReviewRequired", "jtsReviewRequired", "java.lang.Object", null), null, null));
+        workItemNode17.mapDataOutputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_derive_jtsEligible", "jtsEligible", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("jtsEligible", "jtsEligible", "java.lang.Object", null), null, null));
+        workItemNode17.done();
+        workItemNode17.metaData("UniqueId", "j_derive");
+        org.jbpm.ruleflow.core.factory.SplitFactory<?> splitNode18 = factory.splitNode(18);
+        splitNode18.name("All consents granted");
+        splitNode18.type(2);
+        splitNode18.metaData("UniqueId", "j_gw_all_consent");
+        splitNode18.metaData("x", 1966);
+        splitNode18.metaData("width", 50);
+        splitNode18.metaData("y", 80);
+        splitNode18.metaData("Default", null);
+        splitNode18.metaData("height", 50);
+        splitNode18.constraint(21, "jf_granted", "DROOLS_DEFAULT", "FEEL", new org.jbpm.bpmn2.feel.FeelReturnValueEvaluator("allConsentsGranted = true"), 0, false);
+        splitNode18.constraint(19, "jf_declined", "DROOLS_DEFAULT", "FEEL", new org.jbpm.bpmn2.feel.FeelReturnValueEvaluator("allConsentsGranted = false"), 0, false);
+        splitNode18.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode19 = factory.workItemNode(19);
+        workItemNode19.name("Record refusal");
+        workItemNode19.workName("FailureRecordingTask");
+        workItemNode19.workParameter("NodeName", "Record refusal");
+        workItemNode19.done();
+        workItemNode19.metaData("UniqueId", "j_refuse");
+        workItemNode19.metaData("x", 2086);
+        workItemNode19.metaData("width", 140);
+        workItemNode19.metaData("y", 205);
+        workItemNode19.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode20 = factory.endNode(20);
+        endNode20.name("Refused");
+        endNode20.terminate(false);
+        endNode20.metaData("UniqueId", "j_end_refused");
+        endNode20.metaData("x", 2296);
+        endNode20.metaData("width", 36);
+        endNode20.metaData("y", 205);
+        endNode20.metaData("height", 36);
+        endNode20.done();
+        org.jbpm.ruleflow.core.factory.HumanTaskNodeFactory<?> humanTaskNode21 = factory.humanTaskNode(21);
+        humanTaskNode21.name("Maker checker approval");
+        humanTaskNode21.workParameter("NodeName", "Maker checker approval");
+        humanTaskNode21.workParameter("ActorId", "amendments-checker");
+        humanTaskNode21.done();
+        humanTaskNode21.metaData("UniqueId", "j_approve");
+        humanTaskNode21.metaData("x", 2086);
+        humanTaskNode21.metaData("width", 140);
+        humanTaskNode21.metaData("y", 80);
+        humanTaskNode21.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode22 = factory.workItemNode(22);
+        workItemNode22.name("Convert account in core banking");
+        workItemNode22.workName("CoreBankingTask");
+        workItemNode22.workParameter("NodeName", "Convert account in core banking");
+        workItemNode22.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("item", "item", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_convert_item", "item", "java.lang.Object", null), null, null));
+        workItemNode22.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_convert_operation", "operation", "java.lang.Object", null), java.util.Arrays.asList(new org.jbpm.workflow.core.node.Assignment(null, new org.jbpm.workflow.core.impl.DataDefinition("8fa30a8a-ae4f-4dbd-a342-c06643f010a3", "EXPRESSION (CONVERT_TO_SOLE)", "java.lang.Object", "CONVERT_TO_SOLE"), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_convert_operation", "operation", "java.lang.Object", null))), null));
+        workItemNode22.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("accountId", "accountId", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_convert_accountId", "accountId", "java.lang.Object", null), null, null));
+        workItemNode22.mapDataInputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("requestId", "requestId", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("_di_j_convert_idempotencyKey", "idempotencyKey", "java.lang.Object", null), null, null));
+        workItemNode22.done();
+        workItemNode22.metaData("UniqueId", "j_convert");
+        workItemNode22.metaData("x", 2296);
+        workItemNode22.metaData("width", 140);
+        workItemNode22.metaData("y", 80);
+        workItemNode22.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.BoundaryEventNodeFactory<?> boundaryEventNode23 = factory.boundaryEventNode(23);
+        boundaryEventNode23.name("Core failure");
+        boundaryEventNode23.eventType("Error-j_convert-CORE_BANKING_FAILURE");
+        boundaryEventNode23.attachedTo("j_convert");
+        boundaryEventNode23.scope(null);
+        boundaryEventNode23.metaData("UniqueId", "j_convert_error");
+        boundaryEventNode23.metaData("EventType", "error");
+        boundaryEventNode23.metaData("ErrorStructureRef", null);
+        boundaryEventNode23.metaData("ErrorEvent", "CORE_BANKING_FAILURE");
+        boundaryEventNode23.metaData("x", 2418);
+        boundaryEventNode23.metaData("width", 36);
+        boundaryEventNode23.metaData("y", 142);
+        boundaryEventNode23.metaData("AttachedTo", "j_convert");
+        boundaryEventNode23.metaData("HasErrorEvent", true);
+        boundaryEventNode23.metaData("height", 36);
+        boundaryEventNode23.done();
+        org.jbpm.ruleflow.core.factory.WorkItemNodeFactory<?> workItemNode24 = factory.workItemNode(24);
+        workItemNode24.name("Compensate and refer");
+        workItemNode24.workName("CompensationTask");
+        workItemNode24.workParameter("NodeName", "Compensate and refer");
+        workItemNode24.done();
+        workItemNode24.metaData("UniqueId", "j_compensate");
+        workItemNode24.metaData("x", 60);
+        workItemNode24.metaData("width", 140);
+        workItemNode24.metaData("y", 80);
+        workItemNode24.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode25 = factory.endNode(25);
+        endNode25.name("Failed");
+        endNode25.terminate(false);
+        endNode25.metaData("UniqueId", "j_end_failed");
+        endNode25.metaData("x", 270);
+        endNode25.metaData("width", 36);
+        endNode25.metaData("y", 80);
+        endNode25.metaData("height", 36);
+        endNode25.done();
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode26 = factory.endNode(26);
+        endNode26.name("Converted");
+        endNode26.terminate(false);
+        endNode26.metaData("UniqueId", "j_end");
+        endNode26.metaData("x", 2506);
+        endNode26.metaData("width", 36);
+        endNode26.metaData("y", 80);
+        endNode26.metaData("height", 36);
+        endNode26.done();
+        org.jbpm.ruleflow.core.factory.EventSubProcessNodeFactory<?> eventSubProcessNode27 = factory.eventSubProcessNode(27);
+        eventSubProcessNode27.name("Party disputes consent");
+        eventSubProcessNode27.metaData("UniqueId", "j_evsub_dispute");
+        eventSubProcessNode27.metaData("x", 60);
+        eventSubProcessNode27.metaData("width", 442);
+        eventSubProcessNode27.metaData("y", 441);
+        eventSubProcessNode27.metaData("height", 170);
+        eventSubProcessNode27.keepActive(true);
+        eventSubProcessNode27.event("Message-ConsentDisputed");
+        eventSubProcessNode27.autoComplete(true);
+        org.jbpm.ruleflow.core.factory.StartNodeFactory<?> startNode28 = eventSubProcessNode27.startNode(28);
+        startNode28.name("Dispute raised");
+        startNode28.interrupting(true);
+        startNode28.mapDataOutputAssociation(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_d_start", "_do_j_d_start", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("requestId", "requestId", "java.lang.Object", null), null, null));
+        startNode28.metaData("TriggerMapping", "requestId");
+        startNode28.metaData("UniqueId", "j_d_start");
+        startNode28.metaData("TriggerType", "ConsumeMessage");
+        startNode28.metaData("EventType", "message");
+        startNode28.metaData("TriggerRef", "ConsentDisputed");
+        startNode28.metaData("x", 45);
+        startNode28.metaData("width", 36);
+        startNode28.metaData("y", 60);
+        startNode28.metaData("MappingVariable", "requestId");
+        startNode28.metaData("TriggerMappingInput", "_do_j_d_start");
+        startNode28.metaData("MessageType", "String");
+        startNode28.metaData("height", 36);
+        startNode28.done();
+        startNode28.trigger("ConsentDisputed", java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataAssociation(java.util.Arrays.asList(new org.jbpm.workflow.core.impl.DataDefinition("_do_j_d_start", "_do_j_d_start", "java.lang.Object", null)), new org.jbpm.workflow.core.impl.DataDefinition("requestId", "requestId", "java.lang.Object", null), null, null)));
+        org.jbpm.ruleflow.core.factory.HumanTaskNodeFactory<?> humanTaskNode29 = eventSubProcessNode27.humanTaskNode(29);
+        humanTaskNode29.name("Investigate consent dispute");
+        humanTaskNode29.workParameter("NodeName", "Investigate consent dispute");
+        humanTaskNode29.workParameter("ActorId", "disputes");
+        humanTaskNode29.done();
+        humanTaskNode29.metaData("UniqueId", "j_d_task");
+        humanTaskNode29.metaData("x", 151);
+        humanTaskNode29.metaData("width", 140);
+        humanTaskNode29.metaData("y", 60);
+        humanTaskNode29.metaData("height", 80);
+        org.jbpm.ruleflow.core.factory.EndNodeFactory<?> endNode30 = eventSubProcessNode27.endNode(30);
+        endNode30.name("Conversion halted");
+        endNode30.terminate(true);
+        endNode30.metaData("UniqueId", "j_d_end");
+        endNode30.metaData("x", 361);
+        endNode30.metaData("width", 36);
+        endNode30.metaData("y", 60);
+        endNode30.metaData("height", 36);
+        endNode30.done();
+        eventSubProcessNode27.connection(28, 29, "jd1");
+        eventSubProcessNode27.connection(29, 30, "jd2");
+        eventSubProcessNode27.done();
+        factory.errorExceptionHandler("Error-j_convert-CORE_BANKING_FAILURE", "CORE_BANKING_FAILURE", null);
+        factory.connection(1, 2, "jf1");
+        factory.connection(2, 3, "jf2");
+        factory.connection(3, 4, "jf3");
+        factory.connection(4, 5, "jf_divert");
+        factory.connection(5, 6, "jf_divert_out");
+        factory.connection(4, 7, "jf_review");
+        factory.connection(4, 8, "jf_consent");
+        factory.connection(7, 8, "jf_review_out");
+        factory.connection(8, 9, "jf4");
+        factory.connection(9, 17, "jf5");
+        factory.connection(17, 18, "jf5b");
+        factory.connection(18, 19, "jf_declined");
+        factory.connection(19, 20, "jf_ref_out");
+        factory.connection(18, 21, "jf_granted");
+        factory.connection(21, 22, "jf6");
+        factory.connection(23, 24, "jf_err");
+        factory.connection(24, 25, "jf_err_out");
+        factory.connection(22, 26, "jf7");
+        factory.validate();
+        return factory.getProcess();
+    }
+}
