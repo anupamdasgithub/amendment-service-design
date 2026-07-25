@@ -1,9 +1,11 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 
 /** Change of name detail. */
-public class ConDetail {
+public class ConDetail implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String currentName;
     private String newName;

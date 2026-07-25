@@ -2,9 +2,9 @@ package com.bank.amendments.handler;
 
 import com.bank.amendments.model.AmendmentItem;
 import com.bank.amendments.model.AmendmentRequest;
-import com.bank.amendments.model.Enums.Admissibility;
-import com.bank.amendments.model.Enums.AmendmentStatus;
-import com.bank.amendments.model.Enums.AmendmentType;
+import com.bank.amendments.model.Admissibility;
+import com.bank.amendments.model.AmendmentStatus;
+import com.bank.amendments.model.AmendmentType;
 import org.kie.kogito.internal.process.runtime.KogitoWorkItem;
 import org.kie.kogito.internal.process.runtime.KogitoWorkItemHandler;
 import org.kie.kogito.internal.process.runtime.KogitoWorkItemManager;
@@ -67,7 +67,7 @@ public class DerivePlanWorkItemHandler implements KogitoWorkItemHandler {
                 item.setAdmissibility(admissibility);
                 item.setReasonCode(reasonCode);
                 if (admissibility == Admissibility.REFUSED) {
-                    item.setStatus(AmendmentStatus.REFUSED);
+                    item.setStatus(AmendmentStatus.AMENDMENT_REFUSED);
                 } else {
                     item.setStatus(AmendmentStatus.RUNNING);
                     permitted.add(item);

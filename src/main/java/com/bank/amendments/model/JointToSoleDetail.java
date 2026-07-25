@@ -1,7 +1,6 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
-import java.math.BigDecimal;
+import com.bank.amendments.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +8,9 @@ import java.util.List;
  * Joint to sole conversion detail. Carries the most eligibility surface
  * of the three amendment types.
  */
-public class JointToSoleDetail {
+public class JointToSoleDetail implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String remainingPartyId;
     private List<String> departingPartyIds = new ArrayList<>();
@@ -18,7 +19,7 @@ public class JointToSoleDetail {
     private boolean anyPartyDeceased;
     private boolean anyPartyIncapacitated;
     private boolean jointLiabilities;
-    private BigDecimal outstandingBalance = BigDecimal.ZERO;
+    private double outstandingBalance = 0.0;
     private boolean linkedProducts;
     private boolean remainingPartyEligible;
     private String eligibilityAssessmentRef;
@@ -46,8 +47,8 @@ public class JointToSoleDetail {
     public boolean isJointLiabilities() { return jointLiabilities; }
     public void setJointLiabilities(boolean v) { this.jointLiabilities = v; }
 
-    public BigDecimal getOutstandingBalance() { return outstandingBalance; }
-    public void setOutstandingBalance(BigDecimal v) { this.outstandingBalance = v; }
+    public double getOutstandingBalance() { return outstandingBalance; }
+    public void setOutstandingBalance(double v) { this.outstandingBalance = v; }
 
     public boolean isLinkedProducts() { return linkedProducts; }
     public void setLinkedProducts(boolean v) { this.linkedProducts = v; }

@@ -1,11 +1,13 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Output of the AmendmentSequencing decision. */
-public class ExecutionPlan {
+public class ExecutionPlan implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private ExecutionMode mode;
     private List<String> parallelGroup = new ArrayList<>();

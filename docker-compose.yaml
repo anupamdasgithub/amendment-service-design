@@ -15,6 +15,7 @@
 services:
   postgres:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: amendments_dev
       POSTGRES_USER: dev
@@ -32,6 +33,7 @@ services:
 
   kafka:
     image: apache/kafka:3.9.0
+    restart: unless-stopped
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -51,6 +53,7 @@ services:
   # Indexes process instance events emitted by the service.
   data-index:
     image: quay.io/kiegroup/kogito-data-index-postgresql:1.44.1
+    restart: unless-stopped
     ports:
       - "8180:8080"
     depends_on:
@@ -72,6 +75,7 @@ services:
   # Browser UI over Data Index. The /graphql suffix is required.
   management-console:
     image: quay.io/kiegroup/kogito-management-console:1.44.1
+    restart: unless-stopped
     ports:
       - "8280:8080"
     depends_on:

@@ -1,13 +1,15 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 
 /** An account party. Joint accounts carry two or more. */
-public class Party {
+public class Party implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String partyId;
     private String fullName;
-    private PartyStatus status = PartyStatus.ACTIVE;
+    private PartyStatus status = PartyStatus.PARTY_ACTIVE;
     private boolean requestor;
     private boolean remainingHolder;
     private ConsentStatus consentStatus = ConsentStatus.NOT_REQUESTED;

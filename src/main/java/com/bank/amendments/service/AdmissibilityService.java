@@ -1,7 +1,7 @@
 package com.bank.amendments.service;
 
 import com.bank.amendments.model.*;
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import org.kie.kogito.decision.DecisionModel;
 import org.kie.kogito.app.DecisionModels;
 import org.kie.dmn.api.core.DMNContext;
@@ -55,7 +55,7 @@ public class AdmissibilityService {
             item.setReasonText((String) outcome.get("reasonText"));
 
             if (item.getAdmissibility() == Admissibility.REFUSED) {
-                item.setStatus(AmendmentStatus.REFUSED);
+                item.setStatus(AmendmentStatus.AMENDMENT_REFUSED);
             }
         }
     }

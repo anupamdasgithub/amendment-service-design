@@ -1,10 +1,12 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import java.time.Instant;
 
 /** Consent from one departing party on a joint to sole conversion. */
-public class ConsentRecord {
+public class ConsentRecord implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String partyId;
     private ConsentStatus status = ConsentStatus.NOT_REQUESTED;

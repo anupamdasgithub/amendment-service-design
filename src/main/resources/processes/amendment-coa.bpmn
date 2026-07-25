@@ -11,14 +11,15 @@
 
   <bpmn2:itemDefinition id="_c_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
   <bpmn2:itemDefinition id="_c_itemString" structureRef="String"/>
+  <bpmn2:itemDefinition id="_c_itemBoolean" structureRef="Boolean"/>
 
   <bpmn2:error id="_c_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
 
 
   <bpmn2:process id="amendment_coa" name="Change of Address" isExecutable="true" processType="Public">
 
-    <bpmn2:property id="addressVerified"/>
-    <bpmn2:property id="accountId"/>
+    <bpmn2:property id="addressVerified" itemSubjectRef="_c_itemBoolean"/>
+    <bpmn2:property id="accountId" itemSubjectRef="_c_itemString"/>
     <bpmn2:property id="item" itemSubjectRef="_c_itemItem" name="item">
       <bpmn2:extensionElements>
         <drools:metaData name="customTags">

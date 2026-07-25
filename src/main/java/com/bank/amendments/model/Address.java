@@ -1,7 +1,9 @@
 package com.bank.amendments.model;
 
 /** Structured postal address. */
-public class Address {
+public class Address implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String line1;
     private String line2;

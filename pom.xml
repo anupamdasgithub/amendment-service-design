@@ -313,6 +313,39 @@
           <artifactId>kogito-addons-springboot-process-management</artifactId>
           <version>${kogito.community.version}</version>
         </dependency>
+        <!--
+          Durable process state in Postgres. Without this addon the engine
+          keeps process instances in memory only: the REST API reports them
+          while the JVM is up, but nothing is written to Postgres and every
+          restart loses them. Enabling it makes kogito.persistence.type=jdbc
+          (in application-dev.yaml) take effect. Confirmed on Maven Central
+          for 1.44.1.Final.
+        -->
+        <dependency>
+          <groupId>org.kie.kogito</groupId>
+          <artifactId>kogito-addons-springboot-persistence-jdbc</artifactId>
+          <version>${kogito.community.version}</version>
+        </dependency>
+        <!--
+          The stock Kafka events add-on (kogito-addons-springboot-events-process-kafka)
+          is intentionally NOT included. It is compiled against Spring Kafka 2.x,
+          whose KafkaTemplate.send(String, Object) returns ListenableFuture. Spring
+          Boot 3.3.4 ships Spring Kafka 3.2.x, where that method returns
+          CompletableFuture and the old signature is gone, so the add-on throws
+          NoSuchMethodError at runtime (KafkaEventPublisher.publishToTopic). No Spring
+          Kafka version both keeps the old send() AND runs on Spring 6 / Jakarta, and
+          the Kogito team has stated the community Spring Boot add-ons do not support
+          Spring Boot 3, so a version pin cannot fix it.
+
+          Instead, com.bank.amendments.events.KafkaProcessEventPublisher implements the
+          same org.kie.kogito.event.EventPublisher SPI (auto-discovered by the engine),
+          publishing the identical JSON payload to the same topics
+          (kogito-processinstances-events, kogito-usertaskinstances-events,
+          kogito-variables-events) but using the Spring Kafka 3.x send() that returns
+          CompletableFuture. The external Data Index / Management Console (:8280)
+          consume these events unchanged. Because we supply our own EventPublisher,
+          the stock add-on must stay off the classpath so only ours runs.
+        -->
         <dependency>
           <groupId>org.postgresql</groupId>
           <artifactId>postgresql</artifactId>
@@ -338,6 +371,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
             <version>${spring-boot.version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>repackage</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <groupId>org.kie.kogito</groupId>

@@ -320,3 +320,10 @@ the Kogito/BAMOE conventions. Version-specific details — exact starter
 artifact ids, persistence DDL column definitions, and the WorkItemHandler
 interface package — should be validated against the documentation for the
 BAMOE release selected before first build.
+
+## Persistence and Kafka eventing
+
+See [PERSISTENCE_AND_EVENTING.md](PERSISTENCE_AND_EVENTING.md) for the current
+state of JDBC persistence and Kafka event publishing on the community profile,
+what works, the one full-lifecycle limitation and its root cause, and how it
+maps to the BAMOE / CP4BA target.

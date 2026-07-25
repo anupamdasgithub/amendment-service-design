@@ -1,10 +1,12 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import java.time.Instant;
 
 /** Outcome of the enterprise sanctions/PEP screening service. */
-public class ScreeningResult {
+public class ScreeningResult implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private ScreeningOutcome outcome;
     private String referenceId;

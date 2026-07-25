@@ -1,7 +1,7 @@
 package com.bank.amendments.handler;
 
 import com.bank.amendments.model.*;
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import org.kie.kogito.internal.process.runtime.KogitoWorkItem;
 import org.kie.kogito.internal.process.runtime.KogitoWorkItemHandler;
 import org.kie.kogito.internal.process.runtime.KogitoWorkItemManager;
@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -105,7 +104,7 @@ public class AccountIntakeWorkItemHandler implements KogitoWorkItemHandler {
         Party requestor = new Party();
         requestor.setPartyId(request.getRequestorPartyId());
         requestor.setFullName(orDefault(str(p.get("requestorName")), "A Customer"));
-        requestor.setStatus(PartyStatus.ACTIVE);
+        requestor.setStatus(PartyStatus.PARTY_ACTIVE);
         requestor.setRequestor(true);
         requestor.setRemainingHolder(true);
         // The admissibility decision refuses when the mandate is view only.
@@ -285,12 +284,11 @@ public class AccountIntakeWorkItemHandler implements KogitoWorkItemHandler {
         return Boolean.parseBoolean(String.valueOf(o));
     }
 
-    private static BigDecimal decimal(Object o) {
-        if (o instanceof BigDecimal d) return d;
-        if (o instanceof Number n) return BigDecimal.valueOf(n.doubleValue());
-        if (o == null) return BigDecimal.ZERO;
-        try { return new BigDecimal(String.valueOf(o)); }
-        catch (NumberFormatException e) { return BigDecimal.ZERO; }
+    private static double decimal(Object o) {
+        if (o instanceof Number n) return n.doubleValue();
+        if (o == null) return 0.0;
+        try { return Double.parseDouble(String.valueOf(o)); }
+        catch (NumberFormatException e) { return 0.0; }
     }
 
     private static <E extends Enum<E>> E enumOf(Class<E> type, String v, E fallback) {
@@ -301,7 +299,7 @@ public class AccountIntakeWorkItemHandler implements KogitoWorkItemHandler {
 
     private static Channel channel(String v) { return enumOf(Channel.class, v, Channel.DIGITAL); }
     private static AccountStatus accountStatus(String v) { return enumOf(AccountStatus.class, v, AccountStatus.ACTIVE); }
-    private static PartyStatus partyStatus(String v) { return enumOf(PartyStatus.class, v, PartyStatus.ACTIVE); }
+    private static PartyStatus partyStatus(String v) { return enumOf(PartyStatus.class, v, PartyStatus.PARTY_ACTIVE); }
     private static RiskBand riskBand(String v) { return enumOf(RiskBand.class, v, RiskBand.LOW); }
     private static ScreeningOutcome screening(String v) { return enumOf(ScreeningOutcome.class, v, ScreeningOutcome.CLEAR); }
     private static ConNameChangeReason nameChangeReason(String v) { return enumOf(ConNameChangeReason.class, v, ConNameChangeReason.DEED_POLL); }

@@ -1,13 +1,15 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import java.time.Instant;
 
 /**
  * One requested amendment within a request. One item maps to one child
  * process instance when admissible.
  */
-public class AmendmentItem {
+public class AmendmentItem implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String itemId;
     private AmendmentType type;

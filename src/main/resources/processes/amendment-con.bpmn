@@ -11,15 +11,16 @@
 
   <bpmn2:itemDefinition id="_n_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
   <bpmn2:itemDefinition id="_n_itemString" structureRef="String"/>
+  <bpmn2:itemDefinition id="_n_itemBoolean" structureRef="Boolean"/>
 
   <bpmn2:error id="_n_err" errorCode="CORE_BANKING_FAILURE" name="CoreBankingFailure"/>
 
 
   <bpmn2:process id="amendment_con" name="Change of Name" isExecutable="true" processType="Public">
 
-    <bpmn2:property id="rescreenOutcome"/>
-    <bpmn2:property id="rescreenClear"/>
-    <bpmn2:property id="accountId"/>
+    <bpmn2:property id="rescreenOutcome" itemSubjectRef="_n_itemString"/>
+    <bpmn2:property id="rescreenClear" itemSubjectRef="_n_itemBoolean"/>
+    <bpmn2:property id="accountId" itemSubjectRef="_n_itemString"/>
     <bpmn2:property id="item" itemSubjectRef="_n_itemItem" name="item">
       <bpmn2:extensionElements>
         <drools:metaData name="customTags">

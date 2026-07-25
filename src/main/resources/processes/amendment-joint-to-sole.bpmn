@@ -11,6 +11,9 @@
 
   <bpmn2:itemDefinition id="_j_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
   <bpmn2:itemDefinition id="_j_itemString" structureRef="String"/>
+  <bpmn2:itemDefinition id="_j_itemBoolean" structureRef="Boolean"/>
+  <bpmn2:itemDefinition id="_j_itemDecimal" structureRef="Double"/>
+  <bpmn2:itemDefinition id="_j_itemMap" structureRef="java.util.Map"/>
   <bpmn2:message id="_j_msg_dispute" name="ConsentDisputed" itemRef="_j_itemString"/>
   <bpmn2:message id="_j_msg_consent" name="ConsentResponseReceived" itemRef="_j_itemString"/>
 
@@ -19,19 +22,19 @@
 
   <bpmn2:process id="amendment_joint_to_sole" name="Joint to Sole Conversion" isExecutable="true" processType="Public">
 
-    <bpmn2:property id="allConsentsGranted"/>
-    <bpmn2:property id="AnyPartyDeceased"/>
-    <bpmn2:property id="AnyPartyIncapacitated"/>
-    <bpmn2:property id="AllConsentsGrantedVar"/>
-    <bpmn2:property id="JointLiabilities"/>
-    <bpmn2:property id="OverdraftBalance"/>
-    <bpmn2:property id="LinkedProducts"/>
-    <bpmn2:property id="RemainingPartyEligible"/>
-    <bpmn2:property id="jtsDiverted"/>
-    <bpmn2:property id="jtsReviewRequired"/>
-    <bpmn2:property id="jtsEligible"/>
-    <bpmn2:property id="JtsEligibility"/>
-    <bpmn2:property id="accountId"/>
+    <bpmn2:property id="allConsentsGranted" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="AnyPartyDeceased" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="AnyPartyIncapacitated" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="AllConsentsGrantedVar" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="JointLiabilities" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="OverdraftBalance" itemSubjectRef="_j_itemDecimal"/>
+    <bpmn2:property id="LinkedProducts" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="RemainingPartyEligible" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="jtsDiverted" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="jtsReviewRequired" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="jtsEligible" itemSubjectRef="_j_itemBoolean"/>
+    <bpmn2:property id="JtsEligibility" itemSubjectRef="_j_itemMap"/>
+    <bpmn2:property id="accountId" itemSubjectRef="_j_itemString"/>
     <bpmn2:property id="item" itemSubjectRef="_j_itemItem" name="item">
       <bpmn2:extensionElements>
         <drools:metaData name="customTags">

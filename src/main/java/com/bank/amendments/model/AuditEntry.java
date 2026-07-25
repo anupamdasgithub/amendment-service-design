@@ -3,7 +3,9 @@ package com.bank.amendments.model;
 import java.time.Instant;
 
 /** Append-only audit record. Emitted to Kafka and persisted. */
-public class AuditEntry {
+public class AuditEntry implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private Instant at;
     private String actor;

@@ -1,9 +1,11 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 
 /** Change of address detail. */
-public class CoaDetail {
+public class CoaDetail implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private Address currentAddress;
     private Address newAddress;

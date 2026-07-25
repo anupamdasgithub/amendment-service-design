@@ -1,10 +1,12 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import java.time.Instant;
 
 /** Reference to a document held in the enterprise DMS. */
-public class DocumentRef {
+public class DocumentRef implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String documentId;
     private String dmsUri;

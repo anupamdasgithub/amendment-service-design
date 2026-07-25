@@ -1,12 +1,13 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
-import java.math.BigDecimal;
+import com.bank.amendments.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Point-in-time view of the account, read at intake. */
-public class AccountSnapshot {
+public class AccountSnapshot implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String accountId;
     private String productCode;
@@ -14,7 +15,7 @@ public class AccountSnapshot {
     private boolean joint;
     private List<Party> parties = new ArrayList<>();
     private boolean overdraftFacility;
-    private BigDecimal overdraftBalance = BigDecimal.ZERO;
+    private double overdraftBalance = 0.0;
     private boolean linkedProducts;
     private List<String> linkedProductCodes = new ArrayList<>();
     private RiskBand riskBand;
@@ -39,8 +40,8 @@ public class AccountSnapshot {
     public boolean isOverdraftFacility() { return overdraftFacility; }
     public void setOverdraftFacility(boolean v) { this.overdraftFacility = v; }
 
-    public BigDecimal getOverdraftBalance() { return overdraftBalance; }
-    public void setOverdraftBalance(BigDecimal v) { this.overdraftBalance = v; }
+    public double getOverdraftBalance() { return overdraftBalance; }
+    public void setOverdraftBalance(double v) { this.overdraftBalance = v; }
 
     public boolean isLinkedProducts() { return linkedProducts; }
     public void setLinkedProducts(boolean v) { this.linkedProducts = v; }

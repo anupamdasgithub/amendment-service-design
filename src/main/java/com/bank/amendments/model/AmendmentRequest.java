@@ -1,6 +1,6 @@
 package com.bank.amendments.model;
 
-import com.bank.amendments.model.Enums.*;
+import com.bank.amendments.model.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,9 @@ import java.util.List;
  * Case file for a customer-initiated amendment request.
  * Carried as the root process variable of the parent process.
  */
-public class AmendmentRequest {
+public class AmendmentRequest implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
 
     private String requestId;
     private String customerId;

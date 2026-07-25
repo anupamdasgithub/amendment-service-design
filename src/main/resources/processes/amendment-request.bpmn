@@ -15,6 +15,9 @@
   <bpmn2:itemDefinition id="_itemBoolean" structureRef="Boolean"/>
   <bpmn2:itemDefinition id="_itemInt" structureRef="Integer"/>
   <bpmn2:itemDefinition id="_itemItem" structureRef="com.bank.amendments.model.AmendmentItem"/>
+  <bpmn2:itemDefinition id="_itemMap" structureRef="java.util.Map"/>
+  <bpmn2:itemDefinition id="_itemList" structureRef="com.bank.amendments.model.AmendmentItem" isCollection="true"/>
+  <bpmn2:itemDefinition id="_itemExecutionPlan" structureRef="com.bank.amendments.model.ExecutionPlan"/>
 
   <bpmn2:message id="_msg_document" name="ExtraDocumentSubmitted" itemRef="_itemString"/>
   <bpmn2:message id="_msg_verification" name="AdditionalVerificationRequired" itemRef="_itemString"/>
@@ -98,13 +101,13 @@
         </drools:metaData>
       </bpmn2:extensionElements>
     </bpmn2:property>
-    <bpmn2:property id="addressVerified" name="addressVerified"/>
-    <bpmn2:property id="rescreenOutcome" name="rescreenOutcome"/>
-    <bpmn2:property id="allConsentsGranted" name="allConsentsGranted"/>
-    <bpmn2:property id="nameChangeReason" name="nameChangeReason"/>
-    <bpmn2:property id="otherPartyStatus" name="otherPartyStatus"/>
-    <bpmn2:property id="jointLiabilities" name="jointLiabilities"/>
-    <bpmn2:property id="remainingPartyEligible" name="remainingPartyEligible"/>
+    <bpmn2:property id="addressVerified" itemSubjectRef="_itemBoolean" name="addressVerified"/>
+    <bpmn2:property id="rescreenOutcome" itemSubjectRef="_itemString" name="rescreenOutcome"/>
+    <bpmn2:property id="allConsentsGranted" itemSubjectRef="_itemBoolean" name="allConsentsGranted"/>
+    <bpmn2:property id="nameChangeReason" itemSubjectRef="_itemString" name="nameChangeReason"/>
+    <bpmn2:property id="otherPartyStatus" itemSubjectRef="_itemString" name="otherPartyStatus"/>
+    <bpmn2:property id="jointLiabilities" itemSubjectRef="_itemBoolean" name="jointLiabilities"/>
+    <bpmn2:property id="remainingPartyEligible" itemSubjectRef="_itemBoolean" name="remainingPartyEligible"/>
     <bpmn2:property id="riskBand" itemSubjectRef="_itemString" name="riskBand">
       <bpmn2:extensionElements>
         <drools:metaData name="customTags">
@@ -112,14 +115,14 @@
         </drools:metaData>
       </bpmn2:extensionElements>
     </bpmn2:property>
-    <bpmn2:property id="admissibility" name="admissibility">
+    <bpmn2:property id="admissibility" itemSubjectRef="_itemMap" name="admissibility">
       <bpmn2:extensionElements>
         <drools:metaData name="customTags">
           <drools:metaValue><![CDATA[output]]></drools:metaValue>
         </drools:metaData>
       </bpmn2:extensionElements>
     </bpmn2:property>
-    <bpmn2:property id="amendmentItems" name="amendmentItems"/>
+    <bpmn2:property id="amendmentItems" itemSubjectRef="_itemList" name="amendmentItems"/>
     <bpmn2:property id="itemType" itemSubjectRef="_itemString" name="itemType"/>
     <bpmn2:property id="isCoa" itemSubjectRef="_itemBoolean" name="isCoa"/>
     <bpmn2:property id="isCon" itemSubjectRef="_itemBoolean" name="isCon"/>
@@ -153,7 +156,7 @@
         </drools:metaData>
       </bpmn2:extensionElements>
     </bpmn2:property>
-    <bpmn2:property id="ExecutionPlan" name="ExecutionPlan">
+    <bpmn2:property id="ExecutionPlan" itemSubjectRef="_itemExecutionPlan" name="ExecutionPlan">
       <bpmn2:extensionElements>
         <drools:metaData name="customTags">
           <drools:metaValue><![CDATA[output]]></drools:metaValue>
@@ -433,7 +436,7 @@
         <bpmn2:dataOutput id="_do_task_derive_plan_includesCon" name="includesCon"/>
         <bpmn2:dataOutput id="_do_task_derive_plan_includesJointToSole" name="includesJointToSole"/>
         <bpmn2:dataOutput id="_do_task_derive_plan_anyPermitted" name="anyPermitted"/>
-        <bpmn2:dataOutput id="_do_task_derive_plan_amendmentItems" name="amendmentItems"/>
+        <bpmn2:dataOutput id="_do_task_derive_plan_amendmentItems" name="amendmentItems" itemSubjectRef="_itemList"/>
         <bpmn2:inputSet>
           <bpmn2:dataInputRefs>_di_task_derive_plan_request</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>_di_task_derive_plan_admissibility</bpmn2:dataInputRefs>

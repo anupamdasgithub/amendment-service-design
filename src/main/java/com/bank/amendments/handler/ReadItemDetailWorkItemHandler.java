@@ -40,7 +40,7 @@ public class ReadItemDetailWorkItemHandler implements KogitoWorkItemHandler {
         boolean anyPartyDeceased = false;
         boolean anyPartyIncapacitated = false;
         boolean jointLiabilities = false;
-        java.math.BigDecimal overdraftBalance = java.math.BigDecimal.ZERO;
+        double overdraftBalance = 0.0;
         boolean linkedProducts = false;
         boolean remainingPartyEligible = false;
 
