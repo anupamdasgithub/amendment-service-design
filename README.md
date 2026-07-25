@@ -100,13 +100,13 @@ development and verification — it runs and exercises the service on this
 machine, but it is not the deployment artifact. The BAMOE profile remains the
 design of record for shared and production environments.
 
-### CI
+### Profiles and CI
 
-CI runs neither profile. A public GitHub Actions runner has no route to the
-IBM repository, and building against community artifacts would verify
-coordinates the programme does not use. CI validates the BPMN and DMN models
-and applies the SQL migrations against a real Postgres, all of which need no
-engine artifacts at all.
+The community profile builds against Maven Central and is what runs on this
+machine. The BAMOE profile is the design of record but needs a hosted BAMOE
+repository and IBM entitlement, so it does not build on a public runner. This
+repository therefore does not ship a CI pipeline; validation is done locally
+by building and running the decision tests with the community profile.
 
 ## Local development
 
@@ -158,28 +158,6 @@ Two stores, deliberately separate:
 
 `amendment_audit` is append-only. Do not grant UPDATE or DELETE in any
 environment.
-
-## CI
-
-`scripts/ci-check.sh` runs the full gate locally; `.github/workflows/ci.yml`
-runs the same checks on push and PR.
-
-```bash
-./scripts/ci-check.sh
-```
-
-Model validation runs *before* the build. A decision table with the wrong
-number of rule entries is well-formed XML but wrong logic — entries shift
-into neighbouring columns and the table evaluates against the wrong inputs.
-Catching that with a two-second Python check beats waiting for code
-generation to choke on it.
-
-The two validators can also be run directly:
-
-```bash
-python3 scripts/validate_dmn_arity.py src/main/resources/decisions
-python3 scripts/validate_bpmn_refs.py src/main/resources/processes
-```
 
 ## Exercising the service
 
