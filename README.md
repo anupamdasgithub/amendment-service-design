@@ -96,8 +96,9 @@ kogito-processes-spring-boot-starter/maven-metadata.xml | grep release
 ```
 
 The artifact coordinates differ from BAMOE, so this profile is for local
-verification only — it is not a deployment target, and the BAMOE profile
-remains the design of record.
+development and verification — it runs and exercises the service on this
+machine, but it is not the deployment artifact. The BAMOE profile remains the
+design of record for shared and production environments.
 
 ### CI
 
@@ -114,16 +115,20 @@ no commit and no pipeline.
 
 ```bash
 docker compose up -d
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+mvn -Pcommunity -P'!bamoe' spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+The `dev` profile runs the service on port 8090 (see `application-dev.yaml`).
 
 ### Testing a single rule
 
 ```bash
-mvn test -Dtest=AdmissibilityDecisionTest
+mvn -Pcommunity -P'!bamoe' test -Dtest=AdmissibilityDecisionTest
 ```
 
-Edit the decision table, rerun, see the result. Seconds, not a pipeline run.
+The decision tests load the `.dmn` from the classpath and evaluate it directly
+— no running engine and no Docker are needed for them. Edit the decision
+table, rerun, see the result. Seconds, not a pipeline run.
 
 Reserve commit and CI/CD for promotion to shared environments, where the
 versioning and audit value of Git actually applies.
@@ -131,9 +136,12 @@ versioning and audit value of Git actually applies.
 ### Exercising the process
 
 ```bash
-curl -X POST http://localhost:8080/amendment-request \
+curl -X POST http://localhost:8090/amendment_request \
   -H 'Content-Type: application/json' \
-  -d '{"request": {"customerId": "C1", "accountId": "A1", "requestedTypes": ["COA"]}}'
+  -d '{"requestId":"REQ-COA","amendmentType":"COA","accountStatus":"ACTIVE",
+       "requestorIsParty":true,"mandatePermits":true,"channel":"DIGITAL",
+       "screeningOutcome":"CLEAR","inFlightAmendment":false,
+       "accountIsJoint":false,"riskBand":"LOW","addressVerified":true}'
 ```
 
 ## Persistence model
