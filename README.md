@@ -65,7 +65,7 @@ The project has two Maven profiles.
 ### bamoe (default) — the design of record
 
 Uses IBM BAMOE artifacts. **These are not on Maven Central.** IBM distributes
-them through a BAMOE Maven repository you host yourself, as a `.zip` or a
+them through a BAMOE Maven repository I host myself, as a `.zip` or a
 container image, obtained through IBM Passport Advantage or Fix Central. This
 is a licensed IBM distribution and requires entitlement.
 
@@ -74,8 +74,7 @@ mvn -Dbamoe.repo.url=http://localhost:8080/ compile
 ```
 
 Or configure the repository in `~/.m2/settings.xml` under the profile id
-`ibm-bamoe-enterprise-maven-repository`. Set `bamoe.version` to the release you
-are licensed for — version strings carry an IBM build suffix such as
+`ibm-bamoe-enterprise-maven-repository`. I set `bamoe.version` to the release I am licensed for — version strings carry an IBM build suffix such as
 `9.4.2-ibm-0002`, so the bare `9.4.2` will not resolve.
 
 ### community — local verification
@@ -173,6 +172,108 @@ The two validators can also be run directly:
 python3 scripts/validate_dmn_arity.py src/main/resources/decisions
 python3 scripts/validate_bpmn_refs.py src/main/resources/processes
 ```
+
+## Exercising the service
+
+`docs/amendment-service.postman_collection.json` imports into Postman and
+covers the whole API. I set the `baseUrl` collection variable to match how I
+started the app: `http://localhost:8090` for the `dev` profile (see
+`application-dev.yaml`), or `http://localhost:8080` otherwise.
+
+The API is generated from the BPMN by the Kogito Maven plugin — there are no
+hand-written controllers. Each process definition (`amendment_request`,
+`amendment_coa`, `amendment_con`, `amendment_joint_to_sole`) is exposed as a
+REST resource. Human-task nodes become task sub-resources whose path segment
+is the node **name** with spaces replaced by underscores (for example the
+node "Request proof of address" becomes `Request_proof_of_address`, and
+"Underwriting review" becomes `Underwriting_review`) — not the
+`drools:taskName`.
+
+### Starting a request
+
+All journeys start by posting a case file to the parent:
+
+```bash
+curl -X POST {{baseUrl}}/amendment_request \
+  -H 'Content-Type: application/json' \
+  -d '{"requestId":"REQ-COA","amendmentType":"COA","accountStatus":"ACTIVE",
+       "requestorIsParty":true,"mandatePermits":true,"channel":"DIGITAL",
+       "screeningOutcome":"CLEAR","inFlightAmendment":false,
+       "accountIsJoint":false,"riskBand":"LOW","addressVerified":true}'
+```
+
+The seven **Routing scenarios** in the collection each post one such body.
+The scenarios are the point: two requests differing in one field take
+different paths through the same definitions.
+
+| Scenario | Key field | Path taken |
+|---|---|---|
+| 1. Verified address | `addressVerified: true` | applies the change in core banking and completes |
+| 2. Unverified address | `addressVerified: false` | requests proof of address, parks at a user task |
+| 3. Change of name | `amendmentType: CON` | screening then maker-checker approval |
+| 4. Name change with hit | `screeningOutcome` hit | routed to financial-crime review |
+| 5. Joint to sole, consent | `jointLiabilities: false` | consent branch, parks at *Await consent response* |
+| 6. Joint to sole, deceased | `otherPartyStatus: DECEASED` | diverted to the specialist bereavement journey |
+| 7. Multiple amendments | several `items` | sequenced or parallel per the sequencing decision |
+
+### Instance and task queries
+
+Each child process supports listing its running instances and their human
+tasks. The collection's **Instances** and **Human tasks** folders wrap these:
+
+```
+GET {{baseUrl}}/amendment_coa                                  # list CoA instances
+GET {{baseUrl}}/amendment_coa/{id}/tasks?user=amendments-ops   # tasks on one instance
+GET {{baseUrl}}/amendment_joint_to_sole                        # list JTS instances
+GET {{baseUrl}}/amendment_joint_to_sole/{id}/tasks?user=underwriting
+```
+
+List requests carry a small test script that captures the first instance id
+and task id into collection variables (`coaInstanceId`, `jtsInstanceId`,
+`taskId`), so the follow-up completion requests resolve without copying ids
+by hand. Always run the relevant **List instances** then **List tasks**
+request immediately before completing a task, so both the instance id and the
+task id come from the same live instance.
+
+### Completing a human task
+
+Task completion is a phase transition on the process-scoped task resource. The
+path is `/{process}/{instanceId}/{Node_Name}/{taskId}` with a `phase` query
+parameter and the acting `user` (and `group` where the node requires one):
+
+```
+POST {{baseUrl}}/amendment_coa/{{coaInstanceId}}/Request_proof_of_address/{{taskId}}?user=amendments-ops&phase=complete
+POST {{baseUrl}}/amendment_joint_to_sole/{{jtsInstanceId}}/Underwriting_review/{{taskId}}?user=underwriting&phase=complete
+```
+
+Body is the task output model, or `{}` when the node collects nothing. The
+`user` must match the node's potential owner or the transition is rejected.
+
+### Walking a journey end to end
+
+Change of address, held at evidence:
+
+1. Run **2. Unverified address** — starts a CoA instance that parks at
+   *Request proof of address*.
+2. Run **List CoA instances**, then **List CoA tasks (amendments-ops)** —
+   captures `coaInstanceId` and `taskId`.
+3. Run **Complete the proof of address task** — the instance resumes,
+   applies the address in core banking, and completes.
+
+Joint to sole, underwriting branch:
+
+1. Post scenario 5 with `jointLiabilities: true` — the eligibility decision
+   returns `REVIEW_REQUIRED`, so the instance routes to *Underwriting review*
+   instead of the consent branch.
+2. Run **List joint-to-sole instances**, then **List joint-to-sole tasks
+   (underwriting)** — captures `jtsInstanceId` and `taskId`.
+3. Run **Complete underwriting review** — the instance resumes onto the
+   consent branch and parks at *Await consent response*.
+
+The same endpoints work from curl; the collection is the source of truth for
+the exact shapes. The individual request bodies are also checked in under
+`docs/requests/` (see `docs/requests/README.md`) for reuse from curl or any
+other client.
 
 ## Scope and data
 
