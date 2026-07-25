@@ -65,7 +65,7 @@ The project has two Maven profiles.
 ### bamoe (default) — the design of record
 
 Uses IBM BAMOE artifacts. **These are not on Maven Central.** IBM distributes
-them through a BAMOE Maven repository I host myself, as a `.zip` or a
+them through a BAMOE Maven repository we host ourselves, as a `.zip` or a
 container image, obtained through IBM Passport Advantage or Fix Central. This
 is a licensed IBM distribution and requires entitlement.
 
@@ -74,7 +74,7 @@ mvn -Dbamoe.repo.url=http://localhost:8080/ compile
 ```
 
 Or configure the repository in `~/.m2/settings.xml` under the profile id
-`ibm-bamoe-enterprise-maven-repository`. I set `bamoe.version` to the release I am licensed for — version strings carry an IBM build suffix such as
+`ibm-bamoe-enterprise-maven-repository`. We set `bamoe.version` to the release we are licensed for — version strings carry an IBM build suffix such as
 `9.4.2-ibm-0002`, so the bare `9.4.2` will not resolve.
 
 ### community — local verification
@@ -176,7 +176,7 @@ python3 scripts/validate_bpmn_refs.py src/main/resources/processes
 ## Exercising the service
 
 `docs/amendment-service.postman_collection.json` imports into Postman and
-covers the whole API. I set the `baseUrl` collection variable to match how I
+covers the whole API. We set the `baseUrl` collection variable to match how we
 started the app: `http://localhost:8090` for the `dev` profile (see
 `application-dev.yaml`), or `http://localhost:8080` otherwise.
 
